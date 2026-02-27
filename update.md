@@ -1,20 +1,4 @@
-The project is built and working. Here's a summary of what was created:                                                                                                                                                                       
-                                                                                                                                                                                                                                                                             
-  ClaudeUsageMonitor — Complete                                                                                                                                                                                                                                              
-                                                                                                                                                                                                                                                                             
-  Structure:                                                                                                                                                                                                                                                                 
-  ClaudeUsageMonitor.xcodeproj/                                                                                                                                                                                                                                              
-  ClaudeUsageMonitor/                                                                                                                                                                                                                                                        
-    ├── ClaudeUsageMonitorApp.swift   — @main App entry                                                                                                                                                                                                                      
-    ├── AppDelegate.swift             — NSApp setup (no Dock icon)                                                                                                                                                                                                           
-    ├── StatusBarController.swift     — menu bar item + auto-refresh                                                                                                                                                                                                         
-    ├── AnthropicService.swift        — Anthropic API calls                                                                                                                                                                                                                  
-    ├── KeychainManager.swift         — secure API key storage                                                                                                                                                                                                               
-    ├── LoginView.swift               — SwiftUI API key setup
-    ├── SettingsView.swift            — SwiftUI settings panel                                                                                                                                                                                                               
-    ├── UsageData.swift               — data model                                                                                                                                                                                                                           
-    ├── Info.plist                    — LSUIElement=true
-    └── ClaudeUsageMonitor.entitlements
+The project is built and working. 
 
   How it works:
   1. First launch shows a login window to enter and validate the Anthropic API key (stored in Keychain)

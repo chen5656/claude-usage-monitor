@@ -5,46 +5,41 @@ class KeychainManager {
     static let shared = KeychainManager()
 
     private let service = "com.claudeusagemonitor.app"
-    private let account = "anthropic-api-key"
+    private let account = "oauth-tokens"
 
     private init() {}
 
-    func saveAPIKey(_ apiKey: String) -> Bool {
-        guard let data = apiKey.data(using: .utf8) else { return false }
-
-        deleteAPIKey()
-
+    func saveTokens(_ tokens: OAuthTokens) -> Bool {
+        guard let data = try? JSONEncoder().encode(tokens) else { return false }
+        deleteTokens()
         let query: [CFString: Any] = [
-            kSecClass: kSecClassGenericPassword,
+            kSecClass:       kSecClassGenericPassword,
             kSecAttrService: service,
             kSecAttrAccount: account,
-            kSecValueData: data
+            kSecValueData:   data
         ]
-
         return SecItemAdd(query as CFDictionary, nil) == errSecSuccess
     }
 
-    func getAPIKey() -> String? {
+    func getTokens() -> OAuthTokens? {
         let query: [CFString: Any] = [
-            kSecClass: kSecClassGenericPassword,
+            kSecClass:       kSecClassGenericPassword,
             kSecAttrService: service,
             kSecAttrAccount: account,
-            kSecReturnData: true,
-            kSecMatchLimit: kSecMatchLimitOne
+            kSecReturnData:  true,
+            kSecMatchLimit:  kSecMatchLimitOne
         ]
-
         var result: AnyObject?
         guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
-              let data = result as? Data,
-              let key = String(data: data, encoding: .utf8) else {
-            return nil
-        }
-        return key
+              let data   = result as? Data,
+              let tokens = try? JSONDecoder().decode(OAuthTokens.self, from: data)
+        else { return nil }
+        return tokens
     }
 
-    func deleteAPIKey() {
+    func deleteTokens() {
         let query: [CFString: Any] = [
-            kSecClass: kSecClassGenericPassword,
+            kSecClass:       kSecClassGenericPassword,
             kSecAttrService: service,
             kSecAttrAccount: account
         ]

@@ -1,31 +1,25 @@
 import SwiftUI
 
 struct LoginView: View {
-    @State private var apiKey        = ""
-    @State private var isValidating  = false
+    @State private var isLoggingIn  = false
     @State private var errorMessage: String?
 
     let onSuccess: () -> Void
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 24) {
             Image(systemName: "cpu")
-                .font(.system(size: 40))
+                .font(.system(size: 44))
                 .foregroundColor(.accentColor)
 
             Text("Claude Usage Monitor")
-                .font(.title2)
-                .fontWeight(.semibold)
+                .font(.title2).fontWeight(.semibold)
 
-            Text("Enter your Anthropic API key to monitor your usage.")
+            Text("Log in with your Claude.ai account to monitor your plan usage limits.")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
-                .frame(maxWidth: 320)
-
-            SecureField("sk-ant-api03-…", text: $apiKey)
-                .textFieldStyle(.roundedBorder)
-                .frame(width: 320)
+                .frame(maxWidth: 300)
 
             if let msg = errorMessage {
                 Text(msg)
@@ -35,43 +29,54 @@ struct LoginView: View {
                     .frame(maxWidth: 320)
             }
 
-            Button(isValidating ? "Validating…" : "Connect") {
-                Task { await validate() }
+            Button(action: startLogin) {
+                HStack(spacing: 8) {
+                    if isLoggingIn { ProgressView().controlSize(.small) }
+                    Text(isLoggingIn ? "Waiting for browser…" : "Log in with Claude.ai")
+                }
+                .frame(width: 230)
             }
-            .disabled(apiKey.trimmingCharacters(in: .whitespaces).isEmpty || isValidating)
+            .disabled(isLoggingIn)
             .buttonStyle(.borderedProminent)
-            .keyboardShortcut(.return)
+            .controlSize(.large)
 
-            Link("Get your API key →",
-                 destination: URL(string: "https://console.anthropic.com/settings/keys")!)
-                .font(.caption)
+            if isLoggingIn {
+                Button("Cancel") { cancel() }
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
         }
-        .padding(32)
-        .frame(width: 420, height: 300)
+        .padding(36)
+        .frame(width: 420, height: 320)
     }
 
-    @MainActor
-    private func validate() async {
-        isValidating = true
+    private func startLogin() {
+        isLoggingIn  = true
         errorMessage = nil
-        let key = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        do {
-            let valid = try await AnthropicService().validateAPIKey(key)
-            if valid {
-                if KeychainManager.shared.saveAPIKey(key) {
-                    onSuccess()
+        Task {
+            do {
+                let tokens = try await OAuthManager.shared.login()
+                if KeychainManager.shared.saveTokens(tokens) {
+                    await MainActor.run { onSuccess() }
                 } else {
-                    errorMessage = "Failed to save API key to Keychain."
-                    isValidating = false
+                    await MainActor.run {
+                        errorMessage = "Failed to save session to Keychain."
+                        isLoggingIn  = false
+                    }
                 }
-            } else {
-                errorMessage = "Invalid API key. Please try again."
-                isValidating = false
+            } catch OAuthError.cancelled {
+                await MainActor.run { isLoggingIn = false }
+            } catch {
+                await MainActor.run {
+                    errorMessage = error.localizedDescription
+                    isLoggingIn  = false
+                }
             }
-        } catch {
-            errorMessage = error.localizedDescription
-            isValidating = false
         }
+    }
+
+    private func cancel() {
+        OAuthManager.shared.cancelLogin()
+        isLoggingIn = false
     }
 }

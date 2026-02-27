@@ -5,28 +5,26 @@ class StatusBarController: ObservableObject {
     private var statusItem: NSStatusItem?
     private var menu: NSMenu!
     private var refreshTimer: Timer?
-    private let anthropicService = AnthropicService()
+    private let service = AnthropicService()
     private var loginWindow: NSWindow?
 
-    @Published var usageData: UsageData?
-    @Published var refreshInterval: TimeInterval = 600  // 10 minutes default
+    @Published var limits: [UsageLimit] = []
+    @Published var refreshInterval: TimeInterval = 600
 
-    // Menu items updated after each refresh
-    private var usageMenuItem   = NSMenuItem()
-    private var tokensMenuItem  = NSMenuItem()
-    private var resetMenuItem   = NSMenuItem()
+    /// Dynamic menu items inserted above the separator
+    private var usageMenuItems: [NSMenuItem] = []
+    private var usageSeparator: NSMenuItem!
+
+    // MARK: - Setup
 
     func setup() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-
-        if let button = statusItem?.button {
-            button.title = "CC--"
-            button.font  = NSFont.monospacedSystemFont(ofSize: 12, weight: .medium)
-        }
+        statusItem?.button?.title = "CC--"
+        statusItem?.button?.font  = NSFont.monospacedSystemFont(ofSize: 12, weight: .medium)
 
         buildMenu()
 
-        if KeychainManager.shared.getAPIKey() != nil {
+        if KeychainManager.shared.getTokens() != nil {
             startAutoRefresh()
             Task { await refreshUsage() }
         } else {
@@ -34,49 +32,39 @@ class StatusBarController: ObservableObject {
         }
     }
 
-    func cleanup() {
-        refreshTimer?.invalidate()
-    }
+    func cleanup() { refreshTimer?.invalidate() }
 
     // MARK: - Menu
 
     private func buildMenu() {
         menu = NSMenu()
 
-        usageMenuItem.isEnabled  = false
-        tokensMenuItem.isEnabled = false
-        resetMenuItem.isEnabled  = false
+        usageSeparator = NSMenuItem.separator()
+        menu.addItem(usageSeparator)
 
-        usageMenuItem.title  = "Usage: --"
-        tokensMenuItem.title = "Tokens: --"
-        resetMenuItem.title  = "Reset: --"
-
-        menu.addItem(usageMenuItem)
-        menu.addItem(tokensMenuItem)
-        menu.addItem(resetMenuItem)
-        menu.addItem(.separator())
-
-        let refreshItem = NSMenuItem(title: "Refresh Now", action: #selector(handleRefreshNow), keyEquivalent: "r")
+        let refreshItem = NSMenuItem(title: "Refresh Now",
+                                     action: #selector(handleRefreshNow),
+                                     keyEquivalent: "r")
         refreshItem.target = self
         menu.addItem(refreshItem)
-
         menu.addItem(.separator())
 
-        let settingsItem = NSMenuItem(title: "Settings…", action: #selector(handleOpenSettings), keyEquivalent: ",")
+        let settingsItem = NSMenuItem(title: "Settings…",
+                                      action: #selector(handleOpenSettings),
+                                      keyEquivalent: ",")
         settingsItem.target = self
         menu.addItem(settingsItem)
-
         menu.addItem(.separator())
 
-        let quitItem = NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
-        menu.addItem(quitItem)
+        let quit = NSMenuItem(title: "Quit",
+                              action: #selector(NSApplication.terminate(_:)),
+                              keyEquivalent: "q")
+        menu.addItem(quit)
 
         statusItem?.menu = menu
     }
 
-    @objc private func handleRefreshNow() {
-        Task { await refreshUsage() }
-    }
+    @objc private func handleRefreshNow() { Task { await refreshUsage() } }
 
     @objc private func handleOpenSettings() {
         NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
@@ -93,61 +81,72 @@ class StatusBarController: ObservableObject {
     }
 
     func refreshUsage() async {
-        guard let apiKey = KeychainManager.shared.getAPIKey() else {
+        guard let tokens = KeychainManager.shared.getTokens() else {
             await MainActor.run { showLoginWindow() }
             return
         }
-
         do {
-            let data = try await anthropicService.fetchUsage(apiKey: apiKey)
+            let newLimits = try await service.fetchUsage(tokens: tokens)
             await MainActor.run {
-                usageData = data
-                applyUsageToDisplay(data)
+                limits = newLimits
+                applyLimitsToDisplay(newLimits)
             }
         } catch {
             await MainActor.run { applyErrorToDisplay(error) }
         }
     }
 
-    // MARK: - Display updates (must be called on main thread)
+    // MARK: - Display helpers (call on main thread)
 
-    private func applyUsageToDisplay(_ data: UsageData) {
-        let pct = Int(data.usagePercentage.rounded())
-        statusItem?.button?.title = "CC-\(pct)%"
+    private func applyLimitsToDisplay(_ limits: [UsageLimit]) {
+        // Status bar: prefer session (five_hour) limit; fall back to first
+        let primary = limits.first(where: { $0.type == .fiveHour }) ?? limits.first
+        statusItem?.button?.title = primary.map { "CC-\($0.percentage)%" } ?? "CC--"
 
-        usageMenuItem.title  = "Usage: \(pct)%"
-
-        let fmt = NumberFormatter()
-        fmt.numberStyle = .decimal
-        let used = fmt.string(from: NSNumber(value: data.tokensUsed)) ?? "\(data.tokensUsed)"
-        let limit = fmt.string(from: NSNumber(value: data.tokensLimit)) ?? "\(data.tokensLimit)"
-        tokensMenuItem.title = "Tokens: \(used) / \(limit)"
-
-        if let reset = data.resetAt {
-            let interval = reset.timeIntervalSinceNow
-            if interval > 0 {
-                let h = Int(interval / 3600)
-                let m = Int((interval.truncatingRemainder(dividingBy: 3600)) / 60)
-                resetMenuItem.title = h > 0
-                    ? "Reset in: \(h)h \(m)m"
-                    : "Reset in: \(m)m"
-            } else {
-                resetMenuItem.title = "Reset: Now"
-            }
-        } else {
-            resetMenuItem.title = "Reset: --"
-        }
+        rebuildUsageItems(limits)
     }
 
     private func applyErrorToDisplay(_ error: Error) {
         statusItem?.button?.title = "--% ⚠"
-        usageMenuItem.title  = "Error: \(error.localizedDescription)"
-        tokensMenuItem.title = "Tokens: --"
-        resetMenuItem.title  = "Reset: --"
+        let item = NSMenuItem(title: "Error: \(error.localizedDescription)",
+                              action: nil, keyEquivalent: "")
+        item.isEnabled = false
+        rebuildUsageItems(with: [item])
 
-        if case AnthropicError.invalidAPIKey = error {
-            showLoginWindow()
-        }
+        if case AnthropicError.invalidToken = error { showLoginWindow() }
+    }
+
+    private func rebuildUsageItems(_ limits: [UsageLimit]) {
+        let items: [NSMenuItem] = limits.isEmpty
+            ? [makeDisabledItem("No usage data")]
+            : limits.map { limit in
+                var title = "\(limit.type.displayName): \(limit.percentage)%"
+                if let reset = limit.resetsAt {
+                    let secs = reset.timeIntervalSinceNow
+                    if secs > 0 {
+                        let h = Int(secs / 3600)
+                        let m = Int(secs.truncatingRemainder(dividingBy: 3600) / 60)
+                        title += " · resets in " + (h > 0 ? "\(h)h \(m)m" : "\(m)m")
+                    } else {
+                        title += " · resetting…"
+                    }
+                }
+                return makeDisabledItem(title)
+            }
+        rebuildUsageItems(with: items)
+    }
+
+    private func rebuildUsageItems(with items: [NSMenuItem]) {
+        usageMenuItems.forEach { menu.removeItem($0) }
+        usageMenuItems = items
+        let idx = menu.index(of: usageSeparator)
+        items.reversed().forEach { menu.insertItem($0, at: idx) }
+    }
+
+    private func makeDisabledItem(_ title: String) -> NSMenuItem {
+        let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        item.isEnabled = false
+        return item
     }
 
     // MARK: - Login window
@@ -158,19 +157,16 @@ class StatusBarController: ObservableObject {
             NSApp.activate(ignoringOtherApps: true)
             return
         }
-
         let view = LoginView {
             self.loginWindow?.close()
             self.loginWindow = nil
             self.startAutoRefresh()
             Task { await self.refreshUsage() }
         }
-
-        let vc = NSHostingController(rootView: view)
-        let win = NSWindow(contentViewController: vc)
-        win.title = "Claude Usage Monitor – Setup"
+        let win = NSWindow(contentViewController: NSHostingController(rootView: view))
+        win.title = "Claude Usage Monitor"
         win.styleMask = [.titled, .closable]
-        win.setContentSize(NSSize(width: 420, height: 300))
+        win.setContentSize(NSSize(width: 420, height: 320))
         win.center()
         win.isReleasedWhenClosed = false
         loginWindow = win
@@ -186,13 +182,11 @@ class StatusBarController: ObservableObject {
     }
 
     func logout() {
-        KeychainManager.shared.deleteAPIKey()
+        KeychainManager.shared.deleteTokens()
         refreshTimer?.invalidate()
-        usageData = nil
+        limits = []
         statusItem?.button?.title = "CC--"
-        usageMenuItem.title  = "Usage: --"
-        tokensMenuItem.title = "Tokens: --"
-        resetMenuItem.title  = "Reset: --"
+        rebuildUsageItems([])
         showLoginWindow()
     }
 }
