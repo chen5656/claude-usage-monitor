@@ -17,20 +17,16 @@ struct RefreshIntervalView: View {
             VStack(alignment: .leading, spacing: 10) {
                 SectionHeader(title: "Refresh", systemImage: "arrow.clockwise")
 
-                HStack(alignment: .center, spacing: 12) {
+                VStack(alignment: .center, spacing: 12) {
                     Button(action: onRefresh) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "arrow.clockwise.circle.fill")
-                            Text("Refresh Now")
-                        }
+                        Label("Refresh Now", systemImage: "arrow.clockwise.circle.fill")
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.regular)
-                    .frame(minWidth: 120)
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Interval")
-                            .font(.system(size: 11, weight: .medium))
+                        Text("Refresh interval")
+                            .font(.system(size: 11, weight: .semibold))
                             .foregroundColor(.secondary)
 
                         Picker("", selection: $selectedInterval) {
@@ -41,6 +37,7 @@ struct RefreshIntervalView: View {
                         .pickerStyle(.segmented)
                         .labelsHidden()
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
         }
@@ -49,35 +46,10 @@ struct RefreshIntervalView: View {
 }
 
 struct ShortcutCopyView: View {
-    private enum Shortcut: String, CaseIterable, Identifiable {
-        case sonnet46
-        case opus46
-        case sandbox
-        case allowPerms
-
-        var id: String { rawValue }
-
-        var label: String {
-            switch self {
-            case .sonnet46:  return "Sonnet 4.6"
-            case .opus46:    return "Opus 4.6"
-            case .sandbox:   return "Sandbox"
-            case .allowPerms:return "Dangerous Mode"
-            }
-        }
-
-        var command: String {
-            switch self {
-            case .sonnet46:   return "/model claude-sonnet-4-6"
-            case .opus46:     return "/model claude-opus-4-6"
-            case .sandbox:    return "/sandbox"
-            case .allowPerms: return "claude --dangerously-skip-permissions"
-            }
-        }
-    }
-
-    @State private var selected: Shortcut = .sonnet46
+    @StateObject private var store = ShortcutStore()
+    @State private var draftShortcuts: [ShortcutItem] = []
     @State private var copied = false
+    @State private var isEditing = false
 
     var body: some View {
         MenuCard {
@@ -94,37 +66,80 @@ struct ShortcutCopyView: View {
                             .foregroundColor(.green)
                             .transition(.opacity.combined(with: .scale))
                     }
+
+                    Button(isEditing ? "Cancel" : "Edit") {
+                        if isEditing {
+                            isEditing = false
+                        } else {
+                            draftShortcuts = store.shortcuts
+                            isEditing = true
+                        }
+                    }
+                    .buttonStyle(.borderless)
+                    .font(.system(size: 11, weight: .semibold))
                 }
 
-                Text("Paste directly in your terminal to switch models or modes.")
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary)
+                if isEditing {
+                    Text("Update labels and commands stored in your config file.")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
 
-                LazyVGrid(columns: [
-                    GridItem(.flexible(), spacing: 8),
-                    GridItem(.flexible(), spacing: 8),
-                    GridItem(.flexible(), spacing: 8),
-                ], spacing: 8) {
-                    ForEach(Shortcut.allCases) { option in
-                        Button(action: {
-                            selected = option
-                            copySelected()
-                        }) {
-                            Text(option.label)
-                                .font(.system(size: 12, weight: .semibold))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 6)
+                    ScrollView {
+                        VStack(spacing: 8) {
+                            ForEach($draftShortcuts) { $shortcut in
+                                VStack(alignment: .leading, spacing: 4) {
+                                    TextField("Label", text: $shortcut.label)
+                                        .textFieldStyle(.roundedBorder)
+
+                                    TextField("Command", text: $shortcut.command)
+                                        .textFieldStyle(.roundedBorder)
+                                        .font(.system(size: 11, design: .monospaced))
+                                }
+                            }
                         }
-                        .buttonStyle(.plain)
-                        .foregroundColor(.primary)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.primary.opacity(0.02))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .stroke(Color.primary.opacity(0.12), lineWidth: 1)
-                        )
+                    }
+                    .frame(maxHeight: 160)
+
+                    HStack {
+                        Button("Reset") {
+                            draftShortcuts = ShortcutStore.defaultShortcuts
+                        }
+                        .buttonStyle(.borderless)
+
+                        Spacer()
+
+                        Button("Save") { commitEdits() }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(isSaveDisabled)
+                    }
+                } else {
+                    Text("Paste directly in your terminal to switch models or modes.")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+
+                    LazyVGrid(columns: [
+                        GridItem(.flexible(), spacing: 8),
+                        GridItem(.flexible(), spacing: 8),
+                        GridItem(.flexible(), spacing: 8),
+                    ], spacing: 8) {
+                        ForEach(store.shortcuts) { option in
+                            Button(action: { copyShortcut(option) }) {
+                                Text(option.label)
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 6)
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundColor(.primary)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .fill(Color.primary.opacity(0.02))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .stroke(Color.primary.opacity(0.12), lineWidth: 1)
+                            )
+                        }
                     }
                 }
             }
@@ -132,10 +147,29 @@ struct ShortcutCopyView: View {
         .frame(width: 320)
     }
 
-    private func copySelected() {
+    private var isSaveDisabled: Bool {
+        draftShortcuts.contains {
+            $0.label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+            $0.command.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+    }
+
+    private func commitEdits() {
+        let cleaned = draftShortcuts.map { item in
+            ShortcutItem(
+                id: item.id,
+                label: item.label.trimmingCharacters(in: .whitespacesAndNewlines),
+                command: item.command.trimmingCharacters(in: .whitespacesAndNewlines)
+            )
+        }
+        store.update(cleaned)
+        isEditing = false
+    }
+
+    private func copyShortcut(_ shortcut: ShortcutItem) {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.setString(selected.command, forType: .string)
+        pasteboard.setString(shortcut.command, forType: .string)
 
         withAnimation(.easeOut(duration: 0.2)) {
             copied = true
@@ -164,8 +198,8 @@ private struct MenuCard<Content: View>: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(Color.primary.opacity(0.12), lineWidth: 1)
         )
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
     }
 }
 
