@@ -1,6 +1,6 @@
 # Claude Usage Monitor (macOS)
 
-![Claude Usage Monitor Icon](claude_usage_monitor_icon_1772227698010.png)
+![Claude Usage Monitor Icon](claude_usage_monitor_icon.png)
 
 A sleek, lightweight macOS menu bar application to monitor your Anthropic Claude API usage and billing in real-time. Stay informed about your token consumption and rate-limit windows without ever leaving your workflow.
 
@@ -22,10 +22,9 @@ A sleek, lightweight macOS menu bar application to monitor your Anthropic Claude
 
 ## 🛠 Installation
 
-1. **Download**: Obtain the latest `.dmg` or `.app` from the releases page (or build from source).
-2. **Install**: Drag `ClaudeUsageMonitor.app` into your `/Applications` folder.
-3. **Launch**: Open the app. On first launch, you will be redirected to log in securely via your browser using Anthropic OAuth.
-4. **Monitor**: Watch your credits live in your menu bar!
+1. **Download**: Obtain the latest `.dmg` from the releases page (or build from source).
+2. **Launch**: Open the app. On first launch, you will be redirected to log in securely via your browser using Anthropic OAuth.
+3. **Monitor**: Watch your credits live in your menu bar!
 
 ## 🏗 Development
 
