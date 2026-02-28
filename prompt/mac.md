@@ -416,49 +416,9 @@ done
 
 ---
 
-## Xcode Project (`project.pbxproj`)
+## Xcode Project
 
-Use the UUIDs below verbatim — they are referenced by the project file.
-
-### File reference UUIDs
-
-| File                          | FileRef UUID                 | BuildFile UUID               |
-|-------------------------------|------------------------------|------------------------------|
-| `AppDelegate.swift`           | `BB000001000000000000001A`   | `CC000001000000000000001A`   |
-| `StatusBarController.swift`   | `BB000002000000000000001A`   | `CC000002000000000000001A`   |
-| `AnthropicService.swift`      | `BB000003000000000000001A`   | `CC000003000000000000001A`   |
-| `KeychainManager.swift`       | `BB000004000000000000001A`   | `CC000004000000000000001A`   |
-| `LoginView.swift`             | `BB000005000000000000001A`   | `CC000005000000000000001A`   |
-| `UsageData.swift`             | `BB000007000000000000001A`   | `CC000007000000000000001A`   |
-| `ClaudeUsageMonitorApp.swift` | `BB000008000000000000001A`   | `CC000008000000000000001A`   |
-| `Info.plist`                  | `BB000009000000000000001A`   | —                            |
-| `ClaudeUsageMonitor.entitlements` | `BB00000A000000000000001A` | —                          |
-| `ClaudeUsageMonitor.app`      | `BB00000B000000000000001A`   | —                            |
-| `OAuthManager.swift`          | `BB00000C000000000000001A`   | `CC000009000000000000001A`   |
-| `CallbackServer.swift`        | `BB00000D000000000000001A`   | `CC00000A000000000000001A`   |
-| `OAuthTokens.swift`           | `BB00000E000000000000001A`   | `CC00000B000000000000001A`   |
-| `OAuthError.swift`            | `56821D4B2F525A9B00C58E40`   | `56821D4C2F525A9B00C58E40`   |
-| `RefreshIntervalView.swift`   | `56821D4E2F525A9B00C58E41`   | `56821D4D2F525A9B00C58E41`   |
-| `Assets.xcassets`             | `56821D502F525A9B00C58E42`   | `56821D4F2F525A9B00C58E42`   |
-
-### Group / target / config UUIDs
-
-| Object                          | UUID                         |
-|---------------------------------|------------------------------|
-| Root group                      | `AA000002000000000000001A`   |
-| ClaudeUsageMonitor group        | `AA000003000000000000001A`   |
-| Products group                  | `AA000004000000000000001A`   |
-| Native target                   | `AA000005000000000000001A`   |
-| Project object                  | `AA000001000000000000001A`   |
-| Sources build phase             | `DD000001000000000000001A`   |
-| Frameworks build phase          | `DD000002000000000000001A`   |
-| Resources build phase           | `DD000003000000000000001A`   |
-| Project config list             | `FF000001000000000000001A`   |
-| Target config list              | `FF000002000000000000001A`   |
-| Project Debug config            | `EE000001000000000000001A`   |
-| Project Release config          | `EE000002000000000000001A`   |
-| Target Debug config             | `EE000003000000000000001A`   |
-| Target Release config           | `EE000004000000000000001A`   |
+Create a standard macOS App Xcode project named `ClaudeUsageMonitor`. All 12 Swift files and `Assets.xcassets` belong to the single `ClaudeUsageMonitor` target. No test targets.
 
 ### Key build settings
 
@@ -481,9 +441,6 @@ Use the UUIDs below verbatim — they are referenced by the project file.
 | `CreatedOnToolsVersion`          | `16.0`                         |
 | Debug `SWIFT_OPTIMIZATION_LEVEL` | `"-Onone"`                     |
 | Release `SWIFT_COMPILATION_MODE` | `wholemodule`                  |
-
-Sources build phase compile order:
-`ClaudeUsageMonitorApp`, `AppDelegate`, `StatusBarController`, `AnthropicService`, `KeychainManager`, `LoginView`, `UsageData`, `OAuthManager`, `CallbackServer`, `OAuthError`, `RefreshIntervalView`, `OAuthTokens`
 
 ---
 
