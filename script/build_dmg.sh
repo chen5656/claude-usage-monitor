@@ -4,9 +4,12 @@ set -e
 PROJECT="ClaudeUsageMonitor.xcodeproj"
 SCHEME="ClaudeUsageMonitor"
 APP_NAME="Claude Usage Monitor"
-BUILD_DIR="$(pwd)/build"
-DIST_DIR="$(pwd)/dist"
-ICON_SRC="$(pwd)/claude_usage_monitor_icon.png"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+BUILD_DIR="$REPO_ROOT/build"
+DIST_DIR="$REPO_ROOT/dist"
+ICON_SRC="$SCRIPT_DIR/claude_usage_monitor_icon.png"
+PROJECT="$REPO_ROOT/$PROJECT"
 
 mkdir -p "$DIST_DIR"
 
