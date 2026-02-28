@@ -1,54 +1,107 @@
-# Claude Usage Monitor (macOS)
+# Claude Usage Monitor
 
-![Claude Usage Monitor Icon](claude_usage_monitor_icon.png)
+Agent runbook for `claude-usage-monitor` (macOS app).
 
-A sleek, lightweight macOS menu bar application to monitor your Anthropic Claude API usage and billing in real-time. Stay informed about your token consumption and rate-limit windows without ever leaving your workflow.
+## What This App Does
+- Shows Claude usage limits in the macOS menu bar.
+- Displays percentage + reset window for available limits.
+- Uses Claude OAuth login and stores session tokens in Keychain.
 
-## 🚀 Features
+## Build (Agent Steps)
+Requirements:
+- macOS 13+
+- Xcode command line tools / `xcodebuild`
 
-- **Real-time Monitoring**: Displays your current usage percentage (e.g., `CC-42%`) directly in the macOS menu bar.
-- **Detailed Insights**: View token counts, total usage, and the exact time until your rate-limit resets in a clean dropdown menu.
-- **Secure by Design**: Your OAuth tokens are stored securely in the **macOS Keychain**, never in plain text.
-- **Robust Error Handling**: Visual indicators (`--% ⚠`) alert you to network or API issues without interrupting your experience.
-- **Native Experience**: Built with Swift and SwiftUI for macOS 13+, supporting both Apple Silicon and Intel Macs.
-- **Minimal Footprint**: Resides entirely in the menu bar with no Dock clutter.
-
-## 📸 Interface
-
-| Feature | Description |
-| :--- | :--- |
-| **Menu Bar Text** | Shows compact usage percentage (e.g., `72% \| 5h`). |
-| **Dropdown Menu** | Detailed token stats, Reset Timer, Manual Refresh, and Log Out. |
-
-## 🛠 Installation
-
-1. **Download**: Obtain the latest `.dmg` from the releases page (or build from source).
-2. **Launch**: Open the app. On first launch, you will be redirected to log in securely via your browser using Anthropic OAuth.
-3. **Monitor**: Watch your credits live in your menu bar!
-
-## 🏗 Development
-
-### Build from Source
-
-You can build the project using Xcode or the command line:
-
+Build command:
 ```bash
-# Build using xcodebuild
 xcodebuild -project ClaudeUsageMonitor.xcodeproj -scheme ClaudeUsageMonitor \
   -configuration Debug build \
   CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 ```
 
-### Technology Stack
-- **Language**: Swift
-- **UI Framework**: SwiftUI & AppKit
-- **Security**: macOS Keychain Services
-- **API**: Anthropic API (Usage/Billing endpoints)
+Expected result:
+- Build succeeds with no compile errors.
 
-## 🔒 Security & Privacy
+Optional packaging:
+```bash
+./build_dmg.sh
+```
+Creates:
+- `dist/ClaudeUsageMonitor-arm64.dmg`
+- `dist/ClaudeUsageMonitor-x86_64.dmg`
 
-Privacy is a priority. This application only communicates with the official Anthropic API. Your OAuth tokens are encrypted and stored using **macOS Keychain**, ensuring they are protected by system-level security and remain inaccessible to other applications or plain-text file reads.
+## Install (Agent/User Steps)
+From DMG:
+1. Open the generated `.dmg`.
+2. Drag `Claude Usage Monitor.app` to `Applications`.
+3. Launch app from `Applications`.
 
----
+From build output:
+1. Locate built `.app` in Xcode DerivedData/build output.
+2. Move app to `Applications`.
+3. Launch app.
 
-*Stay productive and keep an eye on your credits with Claude Usage Monitor.*
+## Use (Agent/User Steps)
+1. Launch app.
+2. If not logged in, click `Log in with Claude.ai`.
+3. Browser opens Claude OAuth page.
+4. After success, app updates menu bar text like `CC-42%`.
+5. Open menu bar item to:
+   - Refresh now
+   - Change auto-refresh interval
+   - Use quick-copy command shortcuts
+   - Log out
+
+## Keychain Password Prompts
+
+On first launch (and occasionally after token refresh), macOS may show a prompt:
+> "Claude Usage Monitor wants to use your confidential information stored in ... in your keychain."
+
+**Why it happens:** The app is distributed unsigned. macOS Keychain ties trusted access to an app's code signature. Without a stable signature, macOS cannot remember that it has already granted access and prompts again each session.
+
+**How many prompts to expect:**
+- Fresh (non-expired) token: 1 prompt on startup
+- Expired token that needs refresh: up to 2 prompts (1 read + 1 write)
+
+**How to avoid it entirely:** Click **Always Allow** on the first prompt. If macOS still prompts repeatedly, it means the app binary has changed (e.g. rebuilt from source) and its identity no longer matches the stored grant. Click **Always Allow** once more after each rebuild.
+
+For a permanent fix, build and sign with an Apple Developer certificate:
+```bash
+xcodebuild -project ClaudeUsageMonitor.xcodeproj -scheme ClaudeUsageMonitor \
+  -configuration Release build \
+  CODE_SIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)"
+```
+A signed build is trusted by Keychain indefinitely and will never prompt again.
+
+## Why It Is Safe/Secure
+- OAuth tokens are stored only in macOS Keychain (`KeychainManager`).
+- Tokens are not written to plaintext files.
+- OAuth uses PKCE with `code_verifier` and `code_challenge`.
+- OAuth callback is local loopback (`http://localhost:<port>/callback`).
+- App only calls Anthropic OAuth/token and usage endpoints.
+
+Security-relevant files:
+- `ClaudeUsageMonitor/KeychainManager.swift`
+- `ClaudeUsageMonitor/OAuthManager.swift`
+- `ClaudeUsageMonitor/CallbackServer.swift`
+
+## How Data Is Fetched
+Flow:
+1. `StatusBarController` starts refresh cycle.
+2. `AnthropicService.fetchUsage()` checks token expiry.
+3. If expired, `OAuthManager.refresh()` refreshes token.
+4. App calls `GET https://api.anthropic.com/api/oauth/usage` with bearer token.
+5. Parses usage keys (`five_hour`, `seven_day`, `seven_day_sonnet`, `seven_day_opus`).
+6. Updates menu bar title and menu details.
+
+Data-fetch files:
+- `ClaudeUsageMonitor/StatusBarController.swift`
+- `ClaudeUsageMonitor/AnthropicService.swift`
+- `ClaudeUsageMonitor/UsageData.swift`
+
+## Agent Guardrails
+- Keep token storage in Keychain only.
+- Do not add plaintext token logging.
+- Preserve OAuth callback + PKCE behavior.
+- Preserve usage parsing for current supported keys.
+- Keep menu bar app behavior (accessory app, no Dock icon).

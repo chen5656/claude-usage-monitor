@@ -1,0 +1,1 @@
+When open the app, user will need to enter the ios password 4 times, why? I think it should be only once.

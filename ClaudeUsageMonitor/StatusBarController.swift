@@ -7,16 +7,18 @@ class StatusBarController: ObservableObject {
     private var refreshTimer: Timer?
     private let service = AnthropicService()
     private var loginWindow: NSWindow?
+    private let menuCardWidth: CGFloat = 320
 
     @Published var limits: [UsageLimit] = []
     @Published var refreshInterval: TimeInterval = {
         let stored = UserDefaults.standard.double(forKey: "refreshInterval")
-        return stored > 0 ? stored : 300
+        return stored > 0 ? stored : 350
     }()
 
     /// Dynamic menu items inserted above the separator
     private var usageMenuItems: [NSMenuItem] = []
     private var usageSeparator: NSMenuItem!
+    private var authMenuItem: NSMenuItem!
 
     // MARK: - Setup
 
@@ -46,15 +48,7 @@ class StatusBarController: ObservableObject {
         usageSeparator = NSMenuItem.separator()
         menu.addItem(usageSeparator)
 
-        let refreshItem = NSMenuItem(title: "Refresh Now",
-                                     action: #selector(handleRefreshNow),
-                                     keyEquivalent: "r")
-        refreshItem.target = self
-        refreshItem.isEnabled = true
-        menu.addItem(refreshItem)
-        menu.addItem(.separator())
-
-        // Refresh interval picker
+        // Refresh controls (button + interval picker)
         let intervalBinding = Binding<TimeInterval>(
             get: { self.refreshInterval },
             set: { newValue in
@@ -63,20 +57,26 @@ class StatusBarController: ObservableObject {
                 self.startAutoRefresh()
             }
         )
-        let intervalView = RefreshIntervalView(selectedInterval: intervalBinding)
-        let hostingView = NSHostingView(rootView: intervalView)
-        hostingView.frame = NSRect(x: 0, y: 0, width: 240, height: 58)
-        let intervalItem = NSMenuItem()
-        intervalItem.view = hostingView
-        menu.addItem(intervalItem)
+        let intervalView = RefreshIntervalView(selectedInterval: intervalBinding) {
+            Task { await self.refreshUsage() }
+        }
+        let refreshItem = makeHostingMenuItem(intervalView)
+        menu.addItem(refreshItem)
+
+        let shortcutView = ShortcutCopyView()
+        let shortcutItem = makeHostingMenuItem(shortcutView)
+        menu.addItem(shortcutItem)
         menu.addItem(.separator())
 
-        let logoutItem = NSMenuItem(title: "Log Out",
-                                    action: #selector(handleLogOut),
-                                    keyEquivalent: "")
-        logoutItem.target = self
-        logoutItem.isEnabled = true
-        menu.addItem(logoutItem)
+        let isLoggedIn = KeychainManager.shared.getTokens() != nil
+        authMenuItem = NSMenuItem(
+            title: isLoggedIn ? "Log Out" : "Log In",
+            action: isLoggedIn ? #selector(handleLogOut) : #selector(handleLogIn),
+            keyEquivalent: ""
+        )
+        authMenuItem.target = self
+        authMenuItem.isEnabled = true
+        menu.addItem(authMenuItem)
         menu.addItem(.separator())
 
         let quit = NSMenuItem(title: "Quit",
@@ -88,9 +88,8 @@ class StatusBarController: ObservableObject {
         statusItem?.menu = menu
     }
 
-    @objc private func handleRefreshNow() { Task { await refreshUsage() } }
-
     @objc private func handleLogOut() { logout() }
+    @objc private func handleLogIn() { showLoginWindow() }
 
     // MARK: - Data refresh
 
@@ -129,9 +128,7 @@ class StatusBarController: ObservableObject {
 
     private func applyErrorToDisplay(_ error: Error) {
         statusItem?.button?.title = "--% ⚠"
-        let item = NSMenuItem(title: "Error: \(error.localizedDescription)",
-                              action: nil, keyEquivalent: "")
-        item.isEnabled = false
+        let item = makeInfoItem("Error: \(error.localizedDescription)", color: .systemOrange)
         rebuildUsageItems(with: [item])
 
         if case AnthropicError.invalidToken = error { showLoginWindow() }
@@ -139,9 +136,9 @@ class StatusBarController: ObservableObject {
 
     private func rebuildUsageItems(_ limits: [UsageLimit]) {
         let items: [NSMenuItem] = limits.isEmpty
-            ? [makeDisabledItem("No usage data")]
+            ? [makeInfoItem("No usage data")]
             : limits.map { limit in
-                var title = "\(limit.type.displayName): \(limit.percentage)%"
+                var detail = "\(limit.percentage)%"
                 if let reset = limit.resetsAt {
                     let secs = reset.timeIntervalSinceNow
                     if secs > 0 {
@@ -149,17 +146,17 @@ class StatusBarController: ObservableObject {
                         let h = Int(secs.truncatingRemainder(dividingBy: 86400) / 3600)
                         let m = Int(secs.truncatingRemainder(dividingBy: 3600) / 60)
                         if d > 0 {
-                            title += " · resets in \(d)d \(h)h \(m)m"
+                            detail += " · resets in \(d)d \(h)h \(m)m"
                         } else if h > 0 {
-                            title += " · resets in \(h)h \(m)m"
+                            detail += " · resets in \(h)h \(m)m"
                         } else {
-                            title += " · resets in \(m)m"
+                            detail += " · resets in \(m)m"
                         }
                     } else {
-                        title += " · resetting…"
+                        detail += " · resetting…"
                     }
                 }
-                return makeDisabledItem(title)
+                return makeUsageItem(label: limit.type.displayName, detail: detail)
             }
         rebuildUsageItems(with: items)
     }
@@ -171,9 +168,64 @@ class StatusBarController: ObservableObject {
         items.reversed().forEach { menu.insertItem($0, at: idx) }
     }
 
-    private func makeDisabledItem(_ title: String) -> NSMenuItem {
-        let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
-        item.isEnabled = false
+    private func makeInfoItem(_ title: String, color: NSColor = .secondaryLabelColor) -> NSMenuItem {
+        let item = NSMenuItem()
+        let label = NSTextField(labelWithString: title)
+        label.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
+        label.textColor = color
+        label.alignment = .center
+        label.lineBreakMode = .byTruncatingTail
+
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: menuCardWidth, height: 24))
+        label.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
+            label.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
+            label.centerYAnchor.constraint(equalTo: container.centerYAnchor)
+        ])
+        item.view = container
+        return item
+    }
+
+    private func makeUsageItem(label: String, detail: String) -> NSMenuItem {
+        let item = NSMenuItem()
+        let titleField = NSTextField(labelWithString: label)
+        titleField.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
+        titleField.textColor = .labelColor
+        titleField.lineBreakMode = .byTruncatingTail
+
+        let detailField = NSTextField(labelWithString: detail)
+        detailField.font = NSFont.systemFont(ofSize: 11, weight: .regular)
+        detailField.textColor = .secondaryLabelColor
+        detailField.lineBreakMode = .byTruncatingTail
+
+        let stack = NSStackView(views: [titleField, detailField])
+        stack.orientation = .horizontal
+        stack.alignment = .firstBaseline
+        stack.spacing = 6
+        stack.translatesAutoresizingMaskIntoConstraints = false
+
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: menuCardWidth, height: 24))
+        container.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -12),
+            stack.centerYAnchor.constraint(equalTo: container.centerYAnchor)
+        ])
+
+        item.view = container
+        return item
+    }
+
+    private func makeHostingMenuItem<V: View>(_ rootView: V) -> NSMenuItem {
+        let hostingView = NSHostingView(rootView: rootView)
+        hostingView.frame = NSRect(x: 0, y: 0, width: menuCardWidth, height: 1)
+        hostingView.layoutSubtreeIfNeeded()
+        let height = hostingView.fittingSize.height
+        hostingView.frame = NSRect(x: 0, y: 0, width: menuCardWidth, height: height)
+        let item = NSMenuItem()
+        item.view = hostingView
         return item
     }
 
@@ -188,6 +240,8 @@ class StatusBarController: ObservableObject {
         let view = LoginView {
             self.loginWindow?.close()
             self.loginWindow = nil
+            self.authMenuItem.title = "Log Out"
+            self.authMenuItem.action = #selector(self.handleLogOut)
             self.startAutoRefresh()
             Task { await self.refreshUsage() }
         }
@@ -208,6 +262,7 @@ class StatusBarController: ObservableObject {
         limits = []
         statusItem?.button?.title = "CC--"
         rebuildUsageItems([])
-        showLoginWindow()
+        authMenuItem.title = "Log In"
+        authMenuItem.action = #selector(handleLogIn)
     }
 }

@@ -7,46 +7,90 @@ struct LoginView: View {
     let onSuccess: () -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "cpu")
-                .font(.system(size: 44))
-                .foregroundColor(.accentColor)
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color(nsColor: .windowBackgroundColor),
+                    Color.accentColor.opacity(0.08)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
 
-            Text("Claude Usage Monitor")
-                .font(.title2).fontWeight(.semibold)
+            VStack(spacing: 20) {
+                HStack(alignment: .center, spacing: 12) {
+                    Image(systemName: "cpu")
+                        .font(.system(size: 36))
+                        .foregroundColor(.accentColor)
+                        .padding(10)
+                        .background(
+                            Circle()
+                                .fill(Color.accentColor.opacity(0.12))
+                        )
 
-            Text("Log in with your Claude.ai account to monitor your plan usage limits.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 300)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Claude Usage Monitor")
+                            .font(.system(size: 18, weight: .semibold, design: .rounded))
 
-            if let msg = errorMessage {
-                Text(msg)
-                    .font(.caption)
-                    .foregroundColor(.red)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 320)
-            }
+                        Text("Track plan limits from your menu bar")
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                    }
 
-            Button(action: startLogin) {
-                HStack(spacing: 8) {
-                    if isLoggingIn { ProgressView().controlSize(.small) }
-                    Text(isLoggingIn ? "Waiting for browser…" : "Log in with Claude.ai")
+                    Spacer()
                 }
-                .frame(width: 230)
-            }
-            .disabled(isLoggingIn)
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
 
-            if isLoggingIn {
-                Button("Cancel") { cancel() }
-                    .font(.caption)
+                Text("Log in with your Claude.ai account to view your latest usage and reset windows.")
+                    .font(.system(size: 13))
                     .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                if let msg = errorMessage {
+                    HStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        Text(msg)
+                            .font(.caption)
+                            .foregroundColor(.primary)
+                    }
+                    .padding(10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color.orange.opacity(0.12))
+                    )
+                }
+
+                Button(action: startLogin) {
+                    HStack(spacing: 8) {
+                        if isLoggingIn { ProgressView().controlSize(.small) }
+                        Text(isLoggingIn ? "Waiting for browser…" : "Log in with Claude.ai")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .disabled(isLoggingIn)
+                .buttonStyle(.borderedProminent)
+                .tint(.blue)
+                .controlSize(.large)
+
+                if isLoggingIn {
+                    Button("Cancel") { cancel() }
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
+            .padding(24)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color.primary.opacity(0.12), lineWidth: 1)
+            )
+            .padding(28)
         }
-        .padding(36)
         .frame(width: 420, height: 320)
     }
 
