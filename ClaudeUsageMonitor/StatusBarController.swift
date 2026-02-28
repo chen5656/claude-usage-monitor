@@ -46,15 +46,7 @@ class StatusBarController: ObservableObject {
         usageSeparator = NSMenuItem.separator()
         menu.addItem(usageSeparator)
 
-        let refreshItem = NSMenuItem(title: "Refresh Now",
-                                     action: #selector(handleRefreshNow),
-                                     keyEquivalent: "r")
-        refreshItem.target = self
-        refreshItem.isEnabled = true
-        menu.addItem(refreshItem)
-        menu.addItem(.separator())
-
-        // Refresh interval picker
+        // Refresh controls (button + interval picker)
         let intervalBinding = Binding<TimeInterval>(
             get: { self.refreshInterval },
             set: { newValue in
@@ -63,12 +55,22 @@ class StatusBarController: ObservableObject {
                 self.startAutoRefresh()
             }
         )
-        let intervalView = RefreshIntervalView(selectedInterval: intervalBinding)
-        let hostingView = NSHostingView(rootView: intervalView)
-        hostingView.frame = NSRect(x: 0, y: 0, width: 240, height: 58)
-        let intervalItem = NSMenuItem()
-        intervalItem.view = hostingView
-        menu.addItem(intervalItem)
+        let intervalView = RefreshIntervalView(selectedInterval: intervalBinding) {
+            Task { await self.refreshUsage() }
+        }
+        let refreshHostingView = NSHostingView(rootView: intervalView)
+        refreshHostingView.frame = NSRect(x: 0, y: 0, width: 320, height: 110)
+        let refreshItem = NSMenuItem()
+        refreshItem.view = refreshHostingView
+        menu.addItem(refreshItem)
+        menu.addItem(.separator())
+
+        let shortcutView = ShortcutCopyView()
+        let shortcutHostingView = NSHostingView(rootView: shortcutView)
+        shortcutHostingView.frame = NSRect(x: 0, y: 0, width: 320, height: 170)
+        let shortcutItem = NSMenuItem()
+        shortcutItem.view = shortcutHostingView
+        menu.addItem(shortcutItem)
         menu.addItem(.separator())
 
         let logoutItem = NSMenuItem(title: "Log Out",
@@ -87,8 +89,6 @@ class StatusBarController: ObservableObject {
 
         statusItem?.menu = menu
     }
-
-    @objc private func handleRefreshNow() { Task { await refreshUsage() } }
 
     @objc private func handleLogOut() { logout() }
 
