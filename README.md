@@ -10,7 +10,14 @@ Agent runbook for `claude-usage-monitor` (macOS app).
 ## App Screenshot
 ![Claude Usage Monitor menu page](./menu-page.png)
 
-## Build (Agent Steps)
+## Installation
+
+### Download (Recommended)
+Download the latest release from [GitHub Releases](https://github.com/chen5656/claude-usage-monitor/releases):
+- **macOS (Apple Silicon)**: `ClaudeUsageMonitor-arm64.dmg`
+- **macOS (Intel)**: `ClaudeUsageMonitor-x86_64.dmg`
+
+### Build from Source
 Requirements:
 - macOS 13+
 - Xcode command line tools / `xcodebuild`
@@ -22,9 +29,6 @@ xcodebuild -project ClaudeUsageMonitor.xcodeproj -scheme ClaudeUsageMonitor \
   CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 ```
 
-Expected result:
-- Build succeeds with no compile errors.
-
 Optional packaging:
 ```bash
 ./script/build_dmg.sh
@@ -32,17 +36,6 @@ Optional packaging:
 Creates:
 - `dist/ClaudeUsageMonitor-arm64.dmg`
 - `dist/ClaudeUsageMonitor-x86_64.dmg`
-
-## Install (Agent/User Steps)
-From DMG:
-1. Open the generated `.dmg`.
-2. Drag `Claude Usage Monitor.app` to `Applications`.
-3. Launch app from `Applications`.
-
-From build output:
-1. Locate built `.app` in Xcode DerivedData/build output.
-2. Move app to `Applications`.
-3. Launch app.
 
 ## Use (Agent/User Steps)
 1. Launch app.
@@ -108,3 +101,6 @@ Data-fetch files:
 - Preserve OAuth callback + PKCE behavior.
 - Preserve usage parsing for current supported keys.
 - Keep menu bar app behavior (accessory app, no Dock icon).
+
+## License
+MIT. See `LICENSE`.
