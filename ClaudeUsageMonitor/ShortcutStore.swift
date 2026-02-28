@@ -83,6 +83,7 @@ final class ShortcutStore: ObservableObject {
         ShortcutItem(label: "Sonnet 4.6", command: "/model claude-sonnet-4-6"),
         ShortcutItem(label: "Opus 4.6", command: "/model claude-opus-4-6"),
         ShortcutItem(label: "Sandbox", command: "/sandbox"),
+        ShortcutItem(label: "Clear current session", command: "/clear"),
         ShortcutItem(label: "Dangerous Mode", command: "claude --dangerously-skip-permissions"),
     ]
 }

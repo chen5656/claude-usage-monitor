@@ -71,6 +71,7 @@ struct LoginView: View {
                 }
                 .disabled(isLoggingIn)
                 .buttonStyle(.borderedProminent)
+                .tint(.blue)
                 .controlSize(.large)
 
                 if isLoggingIn {

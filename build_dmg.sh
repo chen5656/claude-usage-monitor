@@ -3,7 +3,7 @@ set -e
 
 PROJECT="ClaudeUsageMonitor.xcodeproj"
 SCHEME="ClaudeUsageMonitor"
-APP_NAME="ClaudeUsageMonitor"
+APP_NAME="Claude Usage Monitor"
 BUILD_DIR="$(pwd)/build"
 DIST_DIR="$(pwd)/dist"
 ICON_SRC="$(pwd)/claude_usage_monitor_icon.png"
@@ -64,7 +64,14 @@ build_and_package() {
     iconutil -c icns "$ICONSET_DIR" -o "$ICON_ICNS"
     # Apply icon to .app bundle
     cp "$ICON_ICNS" "$STAGING_DIR/$APP_NAME.app/Contents/Resources/AppIcon.icns"
-    /usr/bin/SetFile -a C "$STAGING_DIR/$APP_NAME.app" 2>/dev/null || true
+    # Clear the kHasCustomIcon FinderInfo bit — it conflicts with CFBundleIconFile for .app bundles
+    xattr -wx com.apple.FinderInfo \
+        "0000000000000000000000000000000000000000000000000000000000000000" \
+        "$STAGING_DIR/$APP_NAME.app" 2>/dev/null || true
+    # Register with Launch Services so the icon is pre-indexed
+    LSREG="/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"
+    "$LSREG" -f "$STAGING_DIR/$APP_NAME.app" 2>/dev/null || true
+    touch "$STAGING_DIR/$APP_NAME.app"
 
     local DMG_TMP="$BUILD_DIR/$ARCH_LABEL/${APP_NAME}_tmp.dmg"
     local DMG_OUT="$DIST_DIR/$DMG_NAME"

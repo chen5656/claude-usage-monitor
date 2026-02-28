@@ -33,7 +33,7 @@ Creates:
 ## Install (Agent/User Steps)
 From DMG:
 1. Open the generated `.dmg`.
-2. Drag `ClaudeUsageMonitor.app` to `Applications`.
+2. Drag `Claude Usage Monitor.app` to `Applications`.
 3. Launch app from `Applications`.
 
 From build output:
@@ -51,6 +51,27 @@ From build output:
    - Change auto-refresh interval
    - Use quick-copy command shortcuts
    - Log out
+
+## Keychain Password Prompts
+
+On first launch (and occasionally after token refresh), macOS may show a prompt:
+> "Claude Usage Monitor wants to use your confidential information stored in ... in your keychain."
+
+**Why it happens:** The app is distributed unsigned. macOS Keychain ties trusted access to an app's code signature. Without a stable signature, macOS cannot remember that it has already granted access and prompts again each session.
+
+**How many prompts to expect:**
+- Fresh (non-expired) token: 1 prompt on startup
+- Expired token that needs refresh: up to 2 prompts (1 read + 1 write)
+
+**How to avoid it entirely:** Click **Always Allow** on the first prompt. If macOS still prompts repeatedly, it means the app binary has changed (e.g. rebuilt from source) and its identity no longer matches the stored grant. Click **Always Allow** once more after each rebuild.
+
+For a permanent fix, build and sign with an Apple Developer certificate:
+```bash
+xcodebuild -project ClaudeUsageMonitor.xcodeproj -scheme ClaudeUsageMonitor \
+  -configuration Release build \
+  CODE_SIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)"
+```
+A signed build is trusted by Keychain indefinitely and will never prompt again.
 
 ## Why It Is Safe/Secure
 - OAuth tokens are stored only in macOS Keychain (`KeychainManager`).

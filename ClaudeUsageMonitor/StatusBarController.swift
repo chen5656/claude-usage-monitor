@@ -18,6 +18,7 @@ class StatusBarController: ObservableObject {
     /// Dynamic menu items inserted above the separator
     private var usageMenuItems: [NSMenuItem] = []
     private var usageSeparator: NSMenuItem!
+    private var authMenuItem: NSMenuItem!
 
     // MARK: - Setup
 
@@ -67,12 +68,15 @@ class StatusBarController: ObservableObject {
         menu.addItem(shortcutItem)
         menu.addItem(.separator())
 
-        let logoutItem = NSMenuItem(title: "Log Out",
-                                    action: #selector(handleLogOut),
-                                    keyEquivalent: "")
-        logoutItem.target = self
-        logoutItem.isEnabled = true
-        menu.addItem(logoutItem)
+        let isLoggedIn = KeychainManager.shared.getTokens() != nil
+        authMenuItem = NSMenuItem(
+            title: isLoggedIn ? "Log Out" : "Log In",
+            action: isLoggedIn ? #selector(handleLogOut) : #selector(handleLogIn),
+            keyEquivalent: ""
+        )
+        authMenuItem.target = self
+        authMenuItem.isEnabled = true
+        menu.addItem(authMenuItem)
         menu.addItem(.separator())
 
         let quit = NSMenuItem(title: "Quit",
@@ -85,6 +89,7 @@ class StatusBarController: ObservableObject {
     }
 
     @objc private func handleLogOut() { logout() }
+    @objc private func handleLogIn() { showLoginWindow() }
 
     // MARK: - Data refresh
 
@@ -235,6 +240,8 @@ class StatusBarController: ObservableObject {
         let view = LoginView {
             self.loginWindow?.close()
             self.loginWindow = nil
+            self.authMenuItem.title = "Log Out"
+            self.authMenuItem.action = #selector(self.handleLogOut)
             self.startAutoRefresh()
             Task { await self.refreshUsage() }
         }
@@ -255,6 +262,7 @@ class StatusBarController: ObservableObject {
         limits = []
         statusItem?.button?.title = "CC--"
         rebuildUsageItems([])
-        showLoginWindow()
+        authMenuItem.title = "Log In"
+        authMenuItem.action = #selector(handleLogIn)
     }
 }
