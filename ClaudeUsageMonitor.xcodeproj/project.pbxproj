@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		56821D4C2F525A9B00C58E40 /* OAuthError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56821D4B2F525A9B00C58E40 /* OAuthError.swift */; };
+		56821D4D2F525A9B00C58E41 /* RefreshIntervalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56821D4E2F525A9B00C58E41 /* RefreshIntervalView.swift */; };
 		CC000001000000000000001A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000001000000000000001A /* AppDelegate.swift */; };
 		CC000002000000000000001A /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000002000000000000001A /* StatusBarController.swift */; };
 		CC000003000000000000001A /* AnthropicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000003000000000000001A /* AnthropicService.swift */; };
@@ -22,6 +23,7 @@
 
 /* Begin PBXFileReference section */
 		56821D4B2F525A9B00C58E40 /* OAuthError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthError.swift; sourceTree = "<group>"; };
+		56821D4E2F525A9B00C58E41 /* RefreshIntervalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshIntervalView.swift; sourceTree = "<group>"; };
 		BB000001000000000000001A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BB000002000000000000001A /* StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
 		BB000003000000000000001A /* AnthropicService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnthropicService.swift; sourceTree = "<group>"; };
@@ -72,6 +74,7 @@
 				BB000009000000000000001A /* Info.plist */,
 				BB00000A000000000000001A /* ClaudeUsageMonitor.entitlements */,
 				56821D4B2F525A9B00C58E40 /* OAuthError.swift */,
+				56821D4E2F525A9B00C58E41 /* RefreshIntervalView.swift */,
 			);
 			path = ClaudeUsageMonitor;
 			sourceTree = "<group>";
@@ -162,6 +165,7 @@
 				CC000009000000000000001A /* OAuthManager.swift in Sources */,
 				CC00000A000000000000001A /* CallbackServer.swift in Sources */,
 				56821D4C2F525A9B00C58E40 /* OAuthError.swift in Sources */,
+				56821D4D2F525A9B00C58E41 /* RefreshIntervalView.swift in Sources */,
 				CC00000B000000000000001A /* OAuthTokens.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

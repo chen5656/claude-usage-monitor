@@ -9,7 +9,10 @@ class StatusBarController: ObservableObject {
     private var loginWindow: NSWindow?
 
     @Published var limits: [UsageLimit] = []
-    @Published var refreshInterval: TimeInterval = 600
+    @Published var refreshInterval: TimeInterval = {
+        let stored = UserDefaults.standard.double(forKey: "refreshInterval")
+        return stored > 0 ? stored : 300
+    }()
 
     /// Dynamic menu items inserted above the separator
     private var usageMenuItems: [NSMenuItem] = []
@@ -38,6 +41,7 @@ class StatusBarController: ObservableObject {
 
     private func buildMenu() {
         menu = NSMenu()
+        menu.autoenablesItems = false
 
         usageSeparator = NSMenuItem.separator()
         menu.addItem(usageSeparator)
@@ -46,19 +50,39 @@ class StatusBarController: ObservableObject {
                                      action: #selector(handleRefreshNow),
                                      keyEquivalent: "r")
         refreshItem.target = self
+        refreshItem.isEnabled = true
         menu.addItem(refreshItem)
+        menu.addItem(.separator())
+
+        // Refresh interval picker
+        let intervalBinding = Binding<TimeInterval>(
+            get: { self.refreshInterval },
+            set: { newValue in
+                self.refreshInterval = newValue
+                UserDefaults.standard.set(newValue, forKey: "refreshInterval")
+                self.startAutoRefresh()
+            }
+        )
+        let intervalView = RefreshIntervalView(selectedInterval: intervalBinding)
+        let hostingView = NSHostingView(rootView: intervalView)
+        hostingView.frame = NSRect(x: 0, y: 0, width: 240, height: 58)
+        let intervalItem = NSMenuItem()
+        intervalItem.view = hostingView
+        menu.addItem(intervalItem)
         menu.addItem(.separator())
 
         let logoutItem = NSMenuItem(title: "Log Out",
                                     action: #selector(handleLogOut),
                                     keyEquivalent: "")
         logoutItem.target = self
+        logoutItem.isEnabled = true
         menu.addItem(logoutItem)
         menu.addItem(.separator())
 
         let quit = NSMenuItem(title: "Quit",
                               action: #selector(NSApplication.terminate(_:)),
                               keyEquivalent: "q")
+        quit.isEnabled = true
         menu.addItem(quit)
 
         statusItem?.menu = menu
