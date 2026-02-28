@@ -6,6 +6,7 @@ SCHEME="ClaudeUsageMonitor"
 APP_NAME="ClaudeUsageMonitor"
 BUILD_DIR="$(pwd)/build"
 DIST_DIR="$(pwd)/dist"
+ICON_SRC="$(pwd)/claude_usage_monitor_icon_1772227698010.png"
 
 mkdir -p "$DIST_DIR"
 
@@ -46,6 +47,25 @@ build_and_package() {
     cp -R "$APP_PATH" "$STAGING_DIR/"
     ln -s /Applications "$STAGING_DIR/Applications"
 
+    # Set custom icon on the .app using the logo PNG
+    local ICON_ICNS="$BUILD_DIR/$ARCH_LABEL/AppIcon.icns"
+    local ICONSET_DIR="$BUILD_DIR/$ARCH_LABEL/AppIcon.iconset"
+    mkdir -p "$ICONSET_DIR"
+    sips -z 16  16  "$ICON_SRC" --out "$ICONSET_DIR/icon_16x16.png"     > /dev/null
+    sips -z 32  32  "$ICON_SRC" --out "$ICONSET_DIR/icon_16x16@2x.png"  > /dev/null
+    sips -z 32  32  "$ICON_SRC" --out "$ICONSET_DIR/icon_32x32.png"     > /dev/null
+    sips -z 64  64  "$ICON_SRC" --out "$ICONSET_DIR/icon_32x32@2x.png"  > /dev/null
+    sips -z 128 128 "$ICON_SRC" --out "$ICONSET_DIR/icon_128x128.png"   > /dev/null
+    sips -z 256 256 "$ICON_SRC" --out "$ICONSET_DIR/icon_128x128@2x.png"> /dev/null
+    sips -z 256 256 "$ICON_SRC" --out "$ICONSET_DIR/icon_256x256.png"   > /dev/null
+    sips -z 512 512 "$ICON_SRC" --out "$ICONSET_DIR/icon_256x256@2x.png"> /dev/null
+    sips -z 512 512 "$ICON_SRC" --out "$ICONSET_DIR/icon_512x512.png"      > /dev/null
+    sips -z 1024 1024 "$ICON_SRC" --out "$ICONSET_DIR/icon_512x512@2x.png" > /dev/null
+    iconutil -c icns "$ICONSET_DIR" -o "$ICON_ICNS"
+    # Apply icon to .app bundle
+    cp "$ICON_ICNS" "$STAGING_DIR/$APP_NAME.app/Contents/Resources/AppIcon.icns"
+    /usr/bin/SetFile -a C "$STAGING_DIR/$APP_NAME.app" 2>/dev/null || true
+
     local DMG_TMP="$BUILD_DIR/$ARCH_LABEL/${APP_NAME}_tmp.dmg"
     local DMG_OUT="$DIST_DIR/$DMG_NAME"
     rm -f "$DMG_TMP" "$DMG_OUT"
@@ -59,8 +79,9 @@ build_and_package() {
         -size 200m \
         "$DMG_TMP"
 
-    # Mount the writable DMG
+    # Ensure mount point is free before attaching
     local MOUNT_DIR="/Volumes/${APP_NAME}"
+    hdiutil detach "$MOUNT_DIR" -force 2>/dev/null || true
     hdiutil attach "$DMG_TMP" -mountpoint "$MOUNT_DIR" -noautoopen -quiet
 
     # Use AppleScript to style the Finder window
@@ -86,7 +107,8 @@ end tell
 APPLESCRIPT
 
     # Unmount
-    hdiutil detach "$MOUNT_DIR" -quiet
+    sync
+    hdiutil detach "$MOUNT_DIR" -force -quiet
 
     # Convert to compressed read-only DMG
     hdiutil convert "$DMG_TMP" -format UDZO -imagekey zlib-level=9 -o "$DMG_OUT"
