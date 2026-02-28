@@ -6,7 +6,7 @@ SCHEME="ClaudeUsageMonitor"
 APP_NAME="ClaudeUsageMonitor"
 BUILD_DIR="$(pwd)/build"
 DIST_DIR="$(pwd)/dist"
-ICON_SRC="$(pwd)/claude_usage_monitor_icon_1772227698010.png"
+ICON_SRC="$(pwd)/claude_usage_monitor_icon.png"
 
 mkdir -p "$DIST_DIR"
 
