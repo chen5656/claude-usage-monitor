@@ -7,6 +7,9 @@ Agent runbook for `claude-usage-monitor` (macOS app).
 - Displays percentage + reset window for available limits.
 - Uses Claude OAuth login and stores session tokens in Keychain.
 
+## App Screenshot
+![Claude Usage Monitor menu page](./menu-page.png)
+
 ## Build (Agent Steps)
 Requirements:
 - macOS 13+
@@ -24,7 +27,7 @@ Expected result:
 
 Optional packaging:
 ```bash
-./build_dmg.sh
+./script/build_dmg.sh
 ```
 Creates:
 - `dist/ClaudeUsageMonitor-arm64.dmg`
