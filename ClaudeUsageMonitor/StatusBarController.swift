@@ -49,11 +49,11 @@ class StatusBarController: ObservableObject {
         menu.addItem(refreshItem)
         menu.addItem(.separator())
 
-        let settingsItem = NSMenuItem(title: "Settings…",
-                                      action: #selector(handleOpenSettings),
-                                      keyEquivalent: ",")
-        settingsItem.target = self
-        menu.addItem(settingsItem)
+        let logoutItem = NSMenuItem(title: "Log Out",
+                                    action: #selector(handleLogOut),
+                                    keyEquivalent: "")
+        logoutItem.target = self
+        menu.addItem(logoutItem)
         menu.addItem(.separator())
 
         let quit = NSMenuItem(title: "Quit",
@@ -66,10 +66,7 @@ class StatusBarController: ObservableObject {
 
     @objc private func handleRefreshNow() { Task { await refreshUsage() } }
 
-    @objc private func handleOpenSettings() {
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-        NSApp.activate(ignoringOtherApps: true)
-    }
+    @objc private func handleLogOut() { logout() }
 
     // MARK: - Data refresh
 
@@ -124,9 +121,16 @@ class StatusBarController: ObservableObject {
                 if let reset = limit.resetsAt {
                     let secs = reset.timeIntervalSinceNow
                     if secs > 0 {
-                        let h = Int(secs / 3600)
+                        let d = Int(secs / 86400)
+                        let h = Int(secs.truncatingRemainder(dividingBy: 86400) / 3600)
                         let m = Int(secs.truncatingRemainder(dividingBy: 3600) / 60)
-                        title += " · resets in " + (h > 0 ? "\(h)h \(m)m" : "\(m)m")
+                        if d > 0 {
+                            title += " · resets in \(d)d \(h)h \(m)m"
+                        } else if h > 0 {
+                            title += " · resets in \(h)h \(m)m"
+                        } else {
+                            title += " · resets in \(m)m"
+                        }
                     } else {
                         title += " · resetting…"
                     }
@@ -172,13 +176,6 @@ class StatusBarController: ObservableObject {
         loginWindow = win
         win.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
-    }
-
-    // MARK: - Settings actions
-
-    func setRefreshInterval(_ interval: TimeInterval) {
-        refreshInterval = interval
-        startAutoRefresh()
     }
 
     func logout() {

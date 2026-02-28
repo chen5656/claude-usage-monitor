@@ -13,7 +13,6 @@
 		CC000003000000000000001A /* AnthropicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000003000000000000001A /* AnthropicService.swift */; };
 		CC000004000000000000001A /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000004000000000000001A /* KeychainManager.swift */; };
 		CC000005000000000000001A /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000005000000000000001A /* LoginView.swift */; };
-		CC000006000000000000001A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000006000000000000001A /* SettingsView.swift */; };
 		CC000007000000000000001A /* UsageData.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000007000000000000001A /* UsageData.swift */; };
 		CC000008000000000000001A /* ClaudeUsageMonitorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000008000000000000001A /* ClaudeUsageMonitorApp.swift */; };
 		CC000009000000000000001A /* OAuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB00000C000000000000001A /* OAuthManager.swift */; };
@@ -28,7 +27,6 @@
 		BB000003000000000000001A /* AnthropicService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnthropicService.swift; sourceTree = "<group>"; };
 		BB000004000000000000001A /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
 		BB000005000000000000001A /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
-		BB000006000000000000001A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		BB000007000000000000001A /* UsageData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageData.swift; sourceTree = "<group>"; };
 		BB000008000000000000001A /* ClaudeUsageMonitorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeUsageMonitorApp.swift; sourceTree = "<group>"; };
 		BB000009000000000000001A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -67,7 +65,6 @@
 				BB000003000000000000001A /* AnthropicService.swift */,
 				BB000004000000000000001A /* KeychainManager.swift */,
 				BB000005000000000000001A /* LoginView.swift */,
-				BB000006000000000000001A /* SettingsView.swift */,
 				BB000007000000000000001A /* UsageData.swift */,
 				BB00000C000000000000001A /* OAuthManager.swift */,
 				BB00000D000000000000001A /* CallbackServer.swift */,
@@ -161,7 +158,6 @@
 				CC000003000000000000001A /* AnthropicService.swift in Sources */,
 				CC000004000000000000001A /* KeychainManager.swift in Sources */,
 				CC000005000000000000001A /* LoginView.swift in Sources */,
-				CC000006000000000000001A /* SettingsView.swift in Sources */,
 				CC000007000000000000001A /* UsageData.swift in Sources */,
 				CC000009000000000000001A /* OAuthManager.swift in Sources */,
 				CC00000A000000000000001A /* CallbackServer.swift in Sources */,

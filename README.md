@@ -8,8 +8,7 @@ A sleek, lightweight macOS menu bar application to monitor your Anthropic Claude
 
 - **Real-time Monitoring**: Displays your current usage percentage (e.g., `CC-42%`) directly in the macOS menu bar.
 - **Detailed Insights**: View token counts, total usage, and the exact time until your rate-limit resets in a clean dropdown menu.
-- **Secure by Design**: Your Anthropic API key is stored securely in the **macOS Keychain**, never in plain text.
-- **Customizable Refresh**: Choose between 30s, 1m, 5m, or 10m refresh intervals to suit your needs.
+- **Secure by Design**: Your OAuth tokens are stored securely in the **macOS Keychain**, never in plain text.
 - **Robust Error Handling**: Visual indicators (`--% ⚠`) alert you to network or API issues without interrupting your experience.
 - **Native Experience**: Built with Swift and SwiftUI for macOS 13+, supporting both Apple Silicon and Intel Macs.
 - **Minimal Footprint**: Resides entirely in the menu bar with no Dock clutter.
@@ -19,20 +18,14 @@ A sleek, lightweight macOS menu bar application to monitor your Anthropic Claude
 | Feature | Description |
 | :--- | :--- |
 | **Menu Bar Text** | Shows compact usage percentage (e.g., `72% \| 5h`). |
-| **Dropdown Menu** | Detailed token stats, Reset Timer, Manual Refresh, and Settings. |
-| **Settings Window** | Configure API Key and refresh frequency. |
+| **Dropdown Menu** | Detailed token stats, Reset Timer, Manual Refresh, and Log Out. |
 
 ## 🛠 Installation
 
 1. **Download**: Obtain the latest `.dmg` or `.app` from the releases page (or build from source).
 2. **Install**: Drag `ClaudeUsageMonitor.app` into your `/Applications` folder.
-3. **Launch**: Open the app. On first launch, you will be prompted to enter your **Anthropic API Key**.
+3. **Launch**: Open the app. On first launch, you will be redirected to log in securely via your browser using Anthropic OAuth.
 4. **Monitor**: Watch your credits live in your menu bar!
-
-## ⚙️ Configuration
-
-- **API Key**: Required to fetch your usage data. You can update or remove it via the Settings menu.
-- **Refresh Interval**: Set how often the app polls the Anthropic API. Default is 10 minutes.
 
 ## 🏗 Development
 
@@ -55,7 +48,7 @@ xcodebuild -project ClaudeUsageMonitor.xcodeproj -scheme ClaudeUsageMonitor \
 
 ## 🔒 Security & Privacy
 
-Privacy is a priority. This application only communicates with the official Anthropic API. Your API key is encrypted and stored using **macOS Keychain**, ensuring it is protected by system-level security and remains inaccessible to other applications or plain-text file reads.
+Privacy is a priority. This application only communicates with the official Anthropic API. Your OAuth tokens are encrypted and stored using **macOS Keychain**, ensuring they are protected by system-level security and remain inaccessible to other applications or plain-text file reads.
 
 ---
 

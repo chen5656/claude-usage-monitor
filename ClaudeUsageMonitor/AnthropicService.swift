@@ -1,11 +1,10 @@
 import Foundation
 
 struct AnthropicService {
-    private let usageURL    = "https://api.anthropic.com/api/oauth/usage"
-    private let betaHeader  = "oauth-2025-04-20"
+    private let usageURL   = "https://api.anthropic.com/api/oauth/usage"
+    private let betaHeader = "oauth-2025-04-20"
 
     func fetchUsage(tokens: OAuthTokens) async throws -> [UsageLimit] {
-        // Refresh the access token if it is (nearly) expired
         var tok = tokens
         if tokens.isExpired {
             tok = try await OAuthManager.shared.refresh(tokens)
@@ -32,36 +31,57 @@ struct AnthropicService {
 
     // MARK: - Parsing
 
+    // Response shape (actual API):
+    // {
+    //   "five_hour":   {"utilization": 21.0, "resets_at": "2026-02-28T04:00:00.451018+00:00"},
+    //   "seven_day":   {"utilization": 15.0, "resets_at": "2026-03-06T13:00:00.451039+00:00"},
+    //   "seven_day_sonnet": null,
+    //   "seven_day_opus":   null,
+    //   ...
+    // }
     private func parse(_ data: Data) throws -> [UsageLimit] {
-        // The API may return a top-level array, or {"limits": [...]}
-        if let arr = try? JSONDecoder().decode([LimitDTO].self, from: data) {
-            return arr.map(\.toUsageLimit)
-        }
-        struct Wrapper: Decodable { let limits: [LimitDTO]? }
-        if let w = try? JSONDecoder().decode(Wrapper.self, from: data) {
-            return (w.limits ?? []).map(\.toUsageLimit)
-        }
-        throw AnthropicError.decodingError
-    }
+        let dec = JSONDecoder()
+        dec.keyDecodingStrategy = .convertFromSnakeCase
 
-    private struct LimitDTO: Decodable {
-        let rateLimitType: String?
-        // The API returns utilization as 0–100 (Claude CLI renders it with Math.floor(H)+"% used")
-        let utilization:   Double?
-        let resetsAt:      Double?   // Unix timestamp in seconds
-
-        var toUsageLimit: UsageLimit {
-            let type = RateLimitType(rawValue: rateLimitType ?? "") ?? .unknown
-            let pct: Int
-            if let u = utilization {
-                // Guard: if value is in 0–1 range treat as fraction, else already 0–100
-                pct = u <= 1.5 ? Int((u * 100).rounded()) : Int(u.rounded())
-            } else {
-                pct = 0
-            }
-            let reset = resetsAt.map { Date(timeIntervalSince1970: $0) }
-            return UsageLimit(type: type, percentage: pct, resetsAt: reset)
+        // ISO 8601 with fractional seconds: "2026-02-28T04:00:00.451018+00:00"
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        dec.dateDecodingStrategy = .custom { decoder in
+            let str = try decoder.singleValueContainer().decode(String.self)
+            if let date = iso.date(from: str) { return date }
+            throw DecodingError.dataCorruptedError(
+                in: try decoder.singleValueContainer(),
+                debugDescription: "Unrecognised date: \(str)")
         }
+
+        struct LimitInfo: Decodable {
+            let utilization: Double?
+            let resetsAt: Date?
+        }
+
+        // Decode the top-level dictionary keys we care about.
+        // Unknown/null keys (seven_day_cowork, iguana_necktie, extra_usage…) are simply ignored.
+        struct UsageResponse: Decodable {
+            let fiveHour: LimitInfo?
+            let sevenDay: LimitInfo?
+            let sevenDaySonnet: LimitInfo?
+            let sevenDayOpus: LimitInfo?
+        }
+
+        let r = try dec.decode(UsageResponse.self, from: data)
+
+        var limits: [UsageLimit] = []
+        func add(_ info: LimitInfo?, type: RateLimitType) {
+            guard let info, let pctRaw = info.utilization else { return }
+            let pct = Int(pctRaw.rounded())
+            limits.append(UsageLimit(type: type, percentage: pct, resetsAt: info.resetsAt))
+        }
+
+        add(r.fiveHour,       type: .fiveHour)
+        add(r.sevenDay,       type: .sevenDay)
+        add(r.sevenDaySonnet, type: .sevenDaySonnet)
+        add(r.sevenDayOpus,   type: .sevenDayOpus)
+        return limits
     }
 }
 
