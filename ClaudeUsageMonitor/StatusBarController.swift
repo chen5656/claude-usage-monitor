@@ -74,6 +74,9 @@ class StatusBarController: ObservableObject {
             action: isLoggedIn ? #selector(handleLogOut) : #selector(handleLogIn),
             keyEquivalent: ""
         )
+        if !isLoggedIn {
+            authMenuItem.attributedTitle = NSAttributedString(string: "Log In", attributes: [.foregroundColor: NSColor.systemBlue])
+        }
         authMenuItem.target = self
         authMenuItem.isEnabled = true
         menu.addItem(authMenuItem)
@@ -241,6 +244,7 @@ class StatusBarController: ObservableObject {
             self.loginWindow?.close()
             self.loginWindow = nil
             self.authMenuItem.title = "Log Out"
+            self.authMenuItem.attributedTitle = nil
             self.authMenuItem.action = #selector(self.handleLogOut)
             self.startAutoRefresh()
             Task { await self.refreshUsage() }
@@ -263,6 +267,7 @@ class StatusBarController: ObservableObject {
         statusItem?.button?.title = "CC--"
         rebuildUsageItems([])
         authMenuItem.title = "Log In"
+        authMenuItem.attributedTitle = NSAttributedString(string: "Log In", attributes: [.foregroundColor: NSColor.systemBlue])
         authMenuItem.action = #selector(handleLogIn)
     }
 }

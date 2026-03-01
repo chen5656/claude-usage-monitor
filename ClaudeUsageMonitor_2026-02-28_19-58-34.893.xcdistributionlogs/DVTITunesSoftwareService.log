@@ -1,0 +1,264 @@
+2026-03-01 01:58:39 +0000  App Store Connect request for store configuration for credential <DVTFoundation.DVTServicesSessionProviderCredential: 0xa4d32c880>; configuration: <DVTITunesConnectConfigurationResponse: 0xa4cb20000; isSuccessful='1', configuration='{
+    RYZW24BHKF =     {
+        "com.apple.platform.appletvos" =         {
+            architectures =             {
+                defaultArch =                 {
+                    defaultProductType =                     {
+                        format =                         {
+                            bitCode =                             {
+                                supportLevel = unsupported;
+                            };
+                            compiledCode =                             {
+                                supportLevel = required;
+                            };
+                        };
+                    };
+                };
+            };
+            iconSource =             {
+                largeAppIcon = carInBinary;
+                primaryIcons = carInBinary;
+            };
+            onDemandResources =             {
+                sizeLimits =                 {
+                    assetPack = 512000000;
+                    prioritizedTotal = 2000000000;
+                    total = 20000000000;
+                };
+                supportLevel = supported;
+            };
+        };
+        "com.apple.platform.iphoneos" =         {
+            architectures =             {
+                defaultArch =                 {
+                    defaultProductType =                     {
+                        format =                         {
+                            bitCode =                             {
+                                supportLevel = unsupported;
+                            };
+                            compiledCode =                             {
+                                supportLevel = required;
+                            };
+                        };
+                    };
+                };
+            };
+            iconSource =             {
+                largeAppIcon = unsupported;
+                primaryIcons = pngInBinary;
+            };
+            onDemandResources =             {
+                sizeLimits =                 {
+                    assetPack = 512000000;
+                    total = 20000000000;
+                };
+                supportLevel = supported;
+            };
+        };
+        "com.apple.platform.macosx" =         {
+            architectures =             {
+                defaultArch =                 {
+                    defaultProductType =                     {
+                        format =                         {
+                            bitCode =                             {
+                                supportLevel = unsupported;
+                            };
+                            compiledCode =                             {
+                                supportLevel = required;
+                            };
+                        };
+                    };
+                };
+            };
+            iconSource =             {
+                largeAppIcon = pngInBinary;
+                primaryIcons = pngInBinary;
+            };
+            onDemandResources =             {
+                supportLevel = unsupported;
+            };
+        };
+        "com.apple.platform.watchos" =         {
+            architectures =             {
+                defaultArch =                 {
+                    defaultProductType =                     {
+                        format =                         {
+                            bitCode =                             {
+                                supportLevel = unsupported;
+                            };
+                            compiledCode =                             {
+                                supportLevel = required;
+                            };
+                        };
+                    };
+                };
+            };
+            iconSource =             {
+                largeAppIcon = unsupported;
+                primaryIcons = pngInBinary;
+            };
+            onDemandResources =             {
+                supportLevel = unsupported;
+            };
+        };
+        "com.apple.platform.xros" =         {
+            architectures =             {
+                defaultArch =                 {
+                    defaultProductType =                     {
+                        format =                         {
+                            bitCode =                             {
+                                supportLevel = unsupported;
+                            };
+                            compiledCode =                             {
+                                supportLevel = required;
+                            };
+                        };
+                    };
+                };
+            };
+            iconSource =             {
+                largeAppIcon = carInBinary;
+                primaryIcons = carInBinary;
+            };
+            onDemandResources =             {
+                supportLevel = unsupported;
+            };
+        };
+        configModelVersion = "1.1";
+    };
+    preflight =     (
+        RYZW24BHKF
+    );
+}', alertMessage='(null)', errors='(null)', warnings='(null)', infoMessages='(null)'>; error (null)
+2026-03-01 01:58:53 +0000  App Store Connect request for store configuration for credential <DVTFoundation.DVTServicesSessionProviderCredential: 0xa4d32c880>; configuration: <DVTITunesConnectConfigurationResponse: 0xa4cb20dc0; isSuccessful='1', configuration='{
+    RYZW24BHKF =     {
+        "com.apple.platform.appletvos" =         {
+            architectures =             {
+                defaultArch =                 {
+                    defaultProductType =                     {
+                        format =                         {
+                            bitCode =                             {
+                                supportLevel = unsupported;
+                            };
+                            compiledCode =                             {
+                                supportLevel = required;
+                            };
+                        };
+                    };
+                };
+            };
+            iconSource =             {
+                largeAppIcon = carInBinary;
+                primaryIcons = carInBinary;
+            };
+            onDemandResources =             {
+                sizeLimits =                 {
+                    assetPack = 512000000;
+                    prioritizedTotal = 2000000000;
+                    total = 20000000000;
+                };
+                supportLevel = supported;
+            };
+        };
+        "com.apple.platform.iphoneos" =         {
+            architectures =             {
+                defaultArch =                 {
+                    defaultProductType =                     {
+                        format =                         {
+                            bitCode =                             {
+                                supportLevel = unsupported;
+                            };
+                            compiledCode =                             {
+                                supportLevel = required;
+                            };
+                        };
+                    };
+                };
+            };
+            iconSource =             {
+                largeAppIcon = unsupported;
+                primaryIcons = pngInBinary;
+            };
+            onDemandResources =             {
+                sizeLimits =                 {
+                    assetPack = 512000000;
+                    total = 20000000000;
+                };
+                supportLevel = supported;
+            };
+        };
+        "com.apple.platform.macosx" =         {
+            architectures =             {
+                defaultArch =                 {
+                    defaultProductType =                     {
+                        format =                         {
+                            bitCode =                             {
+                                supportLevel = unsupported;
+                            };
+                            compiledCode =                             {
+                                supportLevel = required;
+                            };
+                        };
+                    };
+                };
+            };
+            iconSource =             {
+                largeAppIcon = pngInBinary;
+                primaryIcons = pngInBinary;
+            };
+            onDemandResources =             {
+                supportLevel = unsupported;
+            };
+        };
+        "com.apple.platform.watchos" =         {
+            architectures =             {
+                defaultArch =                 {
+                    defaultProductType =                     {
+                        format =                         {
+                            bitCode =                             {
+                                supportLevel = unsupported;
+                            };
+                            compiledCode =                             {
+                                supportLevel = required;
+                            };
+                        };
+                    };
+                };
+            };
+            iconSource =             {
+                largeAppIcon = unsupported;
+                primaryIcons = pngInBinary;
+            };
+            onDemandResources =             {
+                supportLevel = unsupported;
+            };
+        };
+        "com.apple.platform.xros" =         {
+            architectures =             {
+                defaultArch =                 {
+                    defaultProductType =                     {
+                        format =                         {
+                            bitCode =                             {
+                                supportLevel = unsupported;
+                            };
+                            compiledCode =                             {
+                                supportLevel = required;
+                            };
+                        };
+                    };
+                };
+            };
+            iconSource =             {
+                largeAppIcon = carInBinary;
+                primaryIcons = carInBinary;
+            };
+            onDemandResources =             {
+                supportLevel = unsupported;
+            };
+        };
+        configModelVersion = "1.1";
+    };
+    preflight =     (
+        RYZW24BHKF
+    );
+}', alertMessage='(null)', errors='(null)', warnings='(null)', infoMessages='(null)'>; error (null)
