@@ -50,6 +50,7 @@ struct ShortcutCopyView: View {
     @State private var draftShortcuts: [ShortcutItem] = []
     @State private var copied = false
     @State private var isEditing = false
+    @State private var editingIndex = 0
 
     var body: some View {
         MenuCard {
@@ -72,6 +73,7 @@ struct ShortcutCopyView: View {
                             isEditing = false
                         } else {
                             draftShortcuts = store.shortcuts
+                            editingIndex = 0
                             isEditing = true
                         }
                     }
@@ -80,37 +82,81 @@ struct ShortcutCopyView: View {
                 }
 
                 if isEditing {
-                    Text("Update labels and commands stored in your config file.")
+                    Text("Update labels and commands.")
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
 
-                    ScrollView {
-                        VStack(spacing: 8) {
-                            ForEach($draftShortcuts) { $shortcut in
-                                VStack(alignment: .leading, spacing: 4) {
-                                    TextField("Label", text: $shortcut.label)
-                                        .textFieldStyle(.roundedBorder)
+                    if draftShortcuts.isEmpty {
+                        Text("No shortcuts to edit.")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.vertical, 10)
+                    } else {
+                        VStack(alignment: .leading, spacing: 8) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                TextField("Label", text: $draftShortcuts[editingIndex].label)
+                                    .textFieldStyle(.roundedBorder)
 
-                                    TextField("Command", text: $shortcut.command)
-                                        .textFieldStyle(.roundedBorder)
-                                        .font(.system(size: 11, design: .monospaced))
+                                TextField("Command", text: $draftShortcuts[editingIndex].command)
+                                    .textFieldStyle(.roundedBorder)
+                                    .font(.system(size: 11, design: .monospaced))
+                            }
+                            .padding(10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .fill(Color.primary.opacity(0.02))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .stroke(Color.primary.opacity(0.12), lineWidth: 1)
+                            )
+                            
+                            HStack(spacing: 8) {
+                                HStack(spacing: 6) {
+                                    Button {
+                                        if editingIndex > 0 {
+                                            editingIndex -= 1
+                                        }
+                                    } label: {
+                                        Image(systemName: "chevron.left")
+                                            .font(.system(size: 11, weight: .semibold))
+                                            .frame(width: 24, height: 24)
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .disabled(editingIndex == 0)
+
+                                    Button {
+                                        if editingIndex < draftShortcuts.count - 1 {
+                                            editingIndex += 1
+                                        }
+                                    } label: {
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 11, weight: .semibold))
+                                            .frame(width: 24, height: 24)
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .disabled(editingIndex >= draftShortcuts.count - 1)
+
+                                    Text("\(editingIndex + 1)/\(draftShortcuts.count)")
+                                        .font(.system(size: 11, weight: .semibold))
+                                        .foregroundColor(.secondary)
+                                        .padding(.leading, 2)
                                 }
+
+                                Spacer()
+
+                                Button("Reset") {
+                                    draftShortcuts = ShortcutStore.defaultShortcuts
+                                    editingIndex = min(editingIndex, max(0, draftShortcuts.count - 1))
+                                }
+                                .buttonStyle(.borderless)
+
+                                Button("Save") { commitEdits() }
+                                    .buttonStyle(.borderedProminent)
+                                    .disabled(isSaveDisabled)
                             }
                         }
-                    }
-                    .frame(maxHeight: 160)
-
-                    HStack {
-                        Button("Reset") {
-                            draftShortcuts = ShortcutStore.defaultShortcuts
-                        }
-                        .buttonStyle(.borderless)
-
-                        Spacer()
-
-                        Button("Save") { commitEdits() }
-                            .buttonStyle(.borderedProminent)
-                            .disabled(isSaveDisabled)
                     }
                 } else {
                     Text("Paste directly in your terminal to switch models or modes.")
@@ -163,6 +209,7 @@ struct ShortcutCopyView: View {
             )
         }
         store.update(cleaned)
+        editingIndex = min(editingIndex, max(0, cleaned.count - 1))
         isEditing = false
     }
 
