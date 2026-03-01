@@ -103,4 +103,4 @@ Data-fetch files:
 - Keep menu bar app behavior (accessory app, no Dock icon).
 
 ## License
-MIT. See `LICENSE`.
+MIT. See [LICENSE](https://github.com/chen5656/claude-usage-monitor/blob/main/LICENSE).
