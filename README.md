@@ -70,6 +70,7 @@ xcodebuild -project ClaudeUsageMonitor.xcodeproj -scheme ClaudeUsageMonitor \
 A signed build is trusted by Keychain indefinitely and will never prompt again.
 
 ## Why It Is Safe/Secure
+- [Privacy Policy](./PrivacyPolicy.md)
 - OAuth tokens are stored only in macOS Keychain (`KeychainManager`).
 - Tokens are not written to plaintext files.
 - OAuth uses PKCE with `code_verifier` and `code_challenge`.
