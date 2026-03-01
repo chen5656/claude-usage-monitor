@@ -5,3 +5,13 @@
 skills/
 build/
 dist/
+
+# Local Xcode user state
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+
+# Distribution/export logs
+*.xcdistributionlogs/
+
+.apple-review/
