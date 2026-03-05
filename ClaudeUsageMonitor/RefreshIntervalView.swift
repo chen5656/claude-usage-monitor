@@ -1,15 +1,16 @@
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct RefreshIntervalView: View {
     @Binding var selectedInterval: TimeInterval
     let onRefresh: () -> Void
 
     private let options: [(label: String, value: TimeInterval)] = [
-        ("30s", 30),
         ("1m",  60),
         ("5m",  300),
         ("10m", 600),
+        ("30m", 1800),
     ]
 
     var body: some View {
@@ -51,6 +52,12 @@ struct ShortcutCopyView: View {
     @State private var copied = false
     @State private var isEditing = false
     @State private var editingIndex = 0
+    @FocusState private var focusedField: EditingField?
+
+    private enum EditingField: Hashable {
+        case label
+        case command
+    }
 
     var body: some View {
         MenuCard {
@@ -71,10 +78,12 @@ struct ShortcutCopyView: View {
                     Button(isEditing ? "Cancel" : "Edit") {
                         if isEditing {
                             isEditing = false
+                            focusedField = nil
                         } else {
                             draftShortcuts = store.shortcuts
                             editingIndex = 0
                             isEditing = true
+                            focusedField = .label
                         }
                     }
                     .buttonStyle(.borderless)
@@ -97,10 +106,12 @@ struct ShortcutCopyView: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 TextField("Label", text: $draftShortcuts[editingIndex].label)
                                     .textFieldStyle(.roundedBorder)
+                                    .focused($focusedField, equals: .label)
 
                                 TextField("Command", text: $draftShortcuts[editingIndex].command)
                                     .textFieldStyle(.roundedBorder)
                                     .font(.system(size: 11, design: .monospaced))
+                                    .focused($focusedField, equals: .command)
                             }
                             .padding(10)
                             .background(
@@ -111,6 +122,9 @@ struct ShortcutCopyView: View {
                                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                                     .stroke(Color.primary.opacity(0.12), lineWidth: 1)
                             )
+                            .onPasteCommand(of: [.plainText]) { _ in
+                                pasteIntoFocusedField()
+                            }
                             
                             HStack(spacing: 8) {
                                 HStack(spacing: 6) {
@@ -211,6 +225,23 @@ struct ShortcutCopyView: View {
         store.update(cleaned)
         editingIndex = min(editingIndex, max(0, cleaned.count - 1))
         isEditing = false
+        focusedField = nil
+    }
+
+    private func pasteIntoFocusedField() {
+        guard draftShortcuts.indices.contains(editingIndex),
+              let pasted = NSPasteboard.general.string(forType: .string) else {
+            return
+        }
+
+        switch focusedField {
+        case .label:
+            draftShortcuts[editingIndex].label = pasted
+        case .command:
+            draftShortcuts[editingIndex].command = pasted
+        case .none:
+            break
+        }
     }
 
     private func copyShortcut(_ shortcut: ShortcutItem) {

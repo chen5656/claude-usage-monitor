@@ -4,6 +4,8 @@ struct AnthropicService {
     private let usageURL   = "https://api.anthropic.com/api/oauth/usage"
     private let betaHeader = "oauth-2025-04-20"
 
+    private let maxRetries = 2
+
     func fetchUsage(tokens: OAuthTokens) async throws -> [UsageLimit] {
         var tok = tokens
         if tokens.isExpired {
@@ -11,22 +13,40 @@ struct AnthropicService {
             _ = KeychainManager.shared.saveTokens(tok)
         }
 
-        var req = URLRequest(url: URL(string: usageURL)!)
-        req.httpMethod = "GET"
-        req.setValue("Bearer \(tok.accessToken)", forHTTPHeaderField: "Authorization")
-        req.setValue(betaHeader, forHTTPHeaderField: "anthropic-beta")
-        req.timeoutInterval = 15
+        var didRefresh = false
+        for attempt in 0...maxRetries {
+            var req = URLRequest(url: URL(string: usageURL)!)
+            req.httpMethod = "GET"
+            req.setValue("Bearer \(tok.accessToken)", forHTTPHeaderField: "Authorization")
+            req.setValue(betaHeader, forHTTPHeaderField: "anthropic-beta")
+            req.timeoutInterval = 15
 
-        let (data, response) = try await URLSession.shared.data(for: req)
+            let (data, response) = try await URLSession.shared.data(for: req)
 
-        guard let http = response as? HTTPURLResponse else { throw AnthropicError.invalidResponse }
+            guard let http = response as? HTTPURLResponse else { throw AnthropicError.invalidResponse }
 
-        switch http.statusCode {
-        case 200:  return try parse(data)
-        case 401:  throw AnthropicError.invalidToken
-        case 429:  throw AnthropicError.rateLimited
-        default:   throw AnthropicError.serverError(statusCode: http.statusCode)
+            switch http.statusCode {
+            case 200:  return try parse(data)
+            case 401:  throw AnthropicError.invalidToken
+            case 429:
+                if attempt < maxRetries {
+                    // First retry: try refreshing the token (API may 429 stale tokens)
+                    if !didRefresh, tok.refreshToken != nil {
+                        tok = try await OAuthManager.shared.refresh(tok)
+                        _ = KeychainManager.shared.saveTokens(tok)
+                        didRefresh = true
+                        continue
+                    }
+                    let retryAfter = http.value(forHTTPHeaderField: "Retry-After")
+                        .flatMap(Double.init) ?? Double(5 * (attempt + 1))
+                    try await Task.sleep(nanoseconds: UInt64(retryAfter * 1_000_000_000))
+                    continue
+                }
+                throw AnthropicError.rateLimited
+            default:   throw AnthropicError.serverError(statusCode: http.statusCode)
+            }
         }
+        throw AnthropicError.rateLimited
     }
 
     // MARK: - Parsing

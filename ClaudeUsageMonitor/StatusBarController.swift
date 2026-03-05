@@ -12,7 +12,7 @@ class StatusBarController: ObservableObject {
     @Published var limits: [UsageLimit] = []
     @Published var refreshInterval: TimeInterval = {
         let stored = UserDefaults.standard.double(forKey: "refreshInterval")
-        return stored > 0 ? stored : 350
+        return stored > 0 ? stored : 600
     }()
 
     /// Dynamic menu items inserted above the separator
