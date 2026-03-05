@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "AA000005000000000000001A"
-               BuildableName = "Claude Usage Monitor.app"
+               BuildableName = "AI Usage Tracker for Claude Subscription.app"
                BlueprintName = "ClaudeUsageMonitor"
                ReferencedContainer = "container:ClaudeUsageMonitor.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AA000005000000000000001A"
-            BuildableName = "Claude Usage Monitor.app"
+            BuildableName = "AI Usage Tracker for Claude Subscription.app"
             BlueprintName = "ClaudeUsageMonitor"
             ReferencedContainer = "container:ClaudeUsageMonitor.xcodeproj">
          </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AA000005000000000000001A"
-            BuildableName = "Claude Usage Monitor.app"
+            BuildableName = "AI Usage Tracker for Claude Subscription.app"
             BlueprintName = "ClaudeUsageMonitor"
             ReferencedContainer = "container:ClaudeUsageMonitor.xcodeproj">
          </BuildableReference>

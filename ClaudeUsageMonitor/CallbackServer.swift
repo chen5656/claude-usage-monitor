@@ -76,7 +76,7 @@ final class CallbackServer: @unchecked Sendable {
                     <!DOCTYPE html><html><head><title>Done</title>\
                     <style>body{font-family:system-ui;text-align:center;padding-top:80px;background:#f5f5f7}</style>\
                     </head><body><h2>&#x2705; Login successful!</h2>\
-                    <p>You can close this tab and return to Claude Usage Monitor.</p></body></html>
+                    <p>You can close this tab and return to AI Usage Tracker for Claude Subscription.</p></body></html>
                     """)
                 cont.resume(returning: result)
             }

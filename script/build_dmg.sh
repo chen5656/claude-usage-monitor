@@ -3,7 +3,7 @@ set -e
 
 PROJECT="ClaudeUsageMonitor.xcodeproj"
 SCHEME="ClaudeUsageMonitor"
-APP_NAME="Claude Usage Monitor"
+APP_NAME="AI Usage Tracker for Claude Subscription"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 BUILD_DIR="$REPO_ROOT/build"

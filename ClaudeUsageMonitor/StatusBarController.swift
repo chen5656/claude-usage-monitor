@@ -250,7 +250,7 @@ class StatusBarController: ObservableObject {
             Task { await self.refreshUsage() }
         }
         let win = NSWindow(contentViewController: NSHostingController(rootView: view))
-        win.title = "Claude Usage Monitor"
+        win.title = "AI Usage Tracker for Claude Subscription"
         win.styleMask = [.titled, .closable]
         win.setContentSize(NSSize(width: 420, height: 320))
         win.center()
