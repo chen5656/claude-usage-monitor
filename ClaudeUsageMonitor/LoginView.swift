@@ -5,6 +5,7 @@ struct LoginView: View {
     @State private var errorMessage: String?
 
     let onSuccess: () -> Void
+    let onDemo: () -> Void
 
     var body: some View {
         ZStack {
@@ -74,6 +75,14 @@ struct LoginView: View {
                 .tint(.blue)
                 .controlSize(.large)
 
+                Button(action: startDemo) {
+                    Text("Try Demo Mode")
+                        .frame(maxWidth: .infinity)
+                }
+                .disabled(isLoggingIn)
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+
                 if isLoggingIn {
                     Button("Cancel") { cancel() }
                         .font(.caption)
@@ -122,5 +131,10 @@ struct LoginView: View {
     private func cancel() {
         OAuthManager.shared.cancelLogin()
         isLoggingIn = false
+    }
+
+    private func startDemo() {
+        errorMessage = nil
+        onDemo()
     }
 }

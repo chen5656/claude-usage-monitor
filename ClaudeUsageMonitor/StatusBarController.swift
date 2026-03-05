@@ -20,16 +20,20 @@ class StatusBarController: ObservableObject {
     private var usageSeparator: NSMenuItem!
     private var authMenuItem: NSMenuItem!
 
+    private var isDemoMode: Bool {
+        DemoModeStore.isEnabled
+    }
+
     // MARK: - Setup
 
     func setup() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusItem?.button?.title = "CC--"
+        statusItem?.button?.title = isDemoMode ? "DEMO" : "CC--"
         statusItem?.button?.font  = NSFont.monospacedSystemFont(ofSize: 12, weight: .medium)
 
         buildMenu()
 
-        if KeychainManager.shared.getTokens() != nil {
+        if isDemoMode || KeychainManager.shared.getTokens() != nil {
             startAutoRefresh()
             Task { await refreshUsage() }
         } else {
@@ -68,17 +72,10 @@ class StatusBarController: ObservableObject {
         menu.addItem(shortcutItem)
         menu.addItem(.separator())
 
-        let isLoggedIn = KeychainManager.shared.getTokens() != nil
-        authMenuItem = NSMenuItem(
-            title: isLoggedIn ? "Log Out" : "Log In",
-            action: isLoggedIn ? #selector(handleLogOut) : #selector(handleLogIn),
-            keyEquivalent: ""
-        )
-        if !isLoggedIn {
-            authMenuItem.attributedTitle = NSAttributedString(string: "Log In", attributes: [.foregroundColor: NSColor.systemBlue])
-        }
+        authMenuItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
         authMenuItem.target = self
         authMenuItem.isEnabled = true
+        configureAuthMenuItem()
         menu.addItem(authMenuItem)
         menu.addItem(.separator())
 
@@ -93,6 +90,7 @@ class StatusBarController: ObservableObject {
 
     @objc private func handleLogOut() { logout() }
     @objc private func handleLogIn() { showLoginWindow() }
+    @objc private func handleExitDemoMode() { exitDemoMode() }
 
     // MARK: - Data refresh
 
@@ -104,6 +102,15 @@ class StatusBarController: ObservableObject {
     }
 
     func refreshUsage() async {
+        if isDemoMode {
+            let demoLimits = DemoModeStore.sampleLimits()
+            await MainActor.run {
+                limits = demoLimits
+                applyLimitsToDisplay(demoLimits)
+            }
+            return
+        }
+
         guard let tokens = KeychainManager.shared.getTokens() else {
             await MainActor.run { showLoginWindow() }
             return
@@ -124,7 +131,11 @@ class StatusBarController: ObservableObject {
     private func applyLimitsToDisplay(_ limits: [UsageLimit]) {
         // Status bar: prefer session (five_hour) limit; fall back to first
         let primary = limits.first(where: { $0.type == .fiveHour }) ?? limits.first
-        statusItem?.button?.title = primary.map { "CC-\($0.percentage)%" } ?? "CC--"
+        if isDemoMode {
+            statusItem?.button?.title = primary.map { "DEMO-\($0.percentage)%" } ?? "DEMO"
+        } else {
+            statusItem?.button?.title = primary.map { "CC-\($0.percentage)%" } ?? "CC--"
+        }
 
         rebuildUsageItems(limits)
     }
@@ -138,7 +149,7 @@ class StatusBarController: ObservableObject {
     }
 
     private func rebuildUsageItems(_ limits: [UsageLimit]) {
-        let items: [NSMenuItem] = limits.isEmpty
+        var items: [NSMenuItem] = limits.isEmpty
             ? [makeInfoItem("No usage data")]
             : limits.map { limit in
                 var detail = "\(limit.percentage)%"
@@ -161,6 +172,11 @@ class StatusBarController: ObservableObject {
                 }
                 return makeUsageItem(label: limit.type.displayName, detail: detail)
             }
+
+        if isDemoMode {
+            items.insert(makeInfoItem("Demo Mode: Sample data", color: .systemBlue), at: 0)
+        }
+
         rebuildUsageItems(with: items)
     }
 
@@ -240,19 +256,28 @@ class StatusBarController: ObservableObject {
             NSApp.activate(ignoringOtherApps: true)
             return
         }
-        let view = LoginView {
-            self.loginWindow?.close()
-            self.loginWindow = nil
-            self.authMenuItem.title = "Log Out"
-            self.authMenuItem.attributedTitle = nil
-            self.authMenuItem.action = #selector(self.handleLogOut)
-            self.startAutoRefresh()
-            Task { await self.refreshUsage() }
-        }
+        let view = LoginView(
+            onSuccess: {
+                DemoModeStore.setEnabled(false)
+                self.loginWindow?.close()
+                self.loginWindow = nil
+                self.configureAuthMenuItem()
+                self.startAutoRefresh()
+                Task { await self.refreshUsage() }
+            },
+            onDemo: {
+                DemoModeStore.setEnabled(true)
+                self.loginWindow?.close()
+                self.loginWindow = nil
+                self.configureAuthMenuItem()
+                self.startAutoRefresh()
+                Task { await self.refreshUsage() }
+            }
+        )
         let win = NSWindow(contentViewController: NSHostingController(rootView: view))
         win.title = "AI Usage Tracker for Claude Subscription"
         win.styleMask = [.titled, .closable]
-        win.setContentSize(NSSize(width: 420, height: 320))
+        win.setContentSize(NSSize(width: 420, height: 360))
         win.center()
         win.isReleasedWhenClosed = false
         loginWindow = win
@@ -262,12 +287,40 @@ class StatusBarController: ObservableObject {
 
     func logout() {
         KeychainManager.shared.deleteTokens()
+        DemoModeStore.setEnabled(false)
         refreshTimer?.invalidate()
         limits = []
         statusItem?.button?.title = "CC--"
         rebuildUsageItems([])
-        authMenuItem.title = "Log In"
-        authMenuItem.attributedTitle = NSAttributedString(string: "Log In", attributes: [.foregroundColor: NSColor.systemBlue])
-        authMenuItem.action = #selector(handleLogIn)
+        configureAuthMenuItem()
+    }
+
+    private func exitDemoMode() {
+        DemoModeStore.setEnabled(false)
+        refreshTimer?.invalidate()
+        limits = []
+        statusItem?.button?.title = "CC--"
+        rebuildUsageItems([])
+        configureAuthMenuItem()
+        showLoginWindow()
+    }
+
+    private func configureAuthMenuItem() {
+        if isDemoMode {
+            authMenuItem.title = "Exit Demo Mode"
+            authMenuItem.attributedTitle = NSAttributedString(
+                string: "Exit Demo Mode",
+                attributes: [.foregroundColor: NSColor.systemBlue]
+            )
+            authMenuItem.action = #selector(handleExitDemoMode)
+            return
+        }
+
+        let isLoggedIn = KeychainManager.shared.getTokens() != nil
+        authMenuItem.title = isLoggedIn ? "Log Out" : "Log In"
+        authMenuItem.attributedTitle = isLoggedIn
+            ? nil
+            : NSAttributedString(string: "Log In", attributes: [.foregroundColor: NSColor.systemBlue])
+        authMenuItem.action = isLoggedIn ? #selector(handleLogOut) : #selector(handleLogIn)
     }
 }

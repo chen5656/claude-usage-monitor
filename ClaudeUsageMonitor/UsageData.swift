@@ -26,3 +26,50 @@ struct UsageLimit {
     let percentage: Int
     let resetsAt: Date?
 }
+
+enum DemoModeStore {
+    private static let key = "demoModeEnabled"
+
+    static var isEnabled: Bool {
+        UserDefaults.standard.bool(forKey: key)
+    }
+
+    static func setEnabled(_ enabled: Bool) {
+        UserDefaults.standard.set(enabled, forKey: key)
+    }
+
+    static func sampleLimits(now: Date = Date()) -> [UsageLimit] {
+        let minuteSeed = Int(now.timeIntervalSince1970 / 60)
+
+        let sessionPct = 25 + (minuteSeed % 60)
+        let weeklyPct = min(95, 40 + (minuteSeed % 45))
+        let sonnetPct = min(95, 15 + ((minuteSeed * 3) % 70))
+        let opusPct = min(95, 8 + ((minuteSeed * 5) % 60))
+
+        return [
+            UsageLimit(type: .fiveHour, percentage: sessionPct, resetsAt: next5HourBoundary(from: now)),
+            UsageLimit(type: .sevenDay, percentage: weeklyPct, resetsAt: nextWeeklyBoundary(from: now)),
+            UsageLimit(type: .sevenDaySonnet, percentage: sonnetPct, resetsAt: nextWeeklyBoundary(from: now, dayOffset: 1)),
+            UsageLimit(type: .sevenDayOpus, percentage: opusPct, resetsAt: nextWeeklyBoundary(from: now, dayOffset: 2))
+        ]
+    }
+
+    private static func next5HourBoundary(from now: Date) -> Date {
+        let interval: TimeInterval = 5 * 60 * 60
+        let next = ceil(now.timeIntervalSince1970 / interval) * interval
+        return Date(timeIntervalSince1970: next)
+    }
+
+    private static func nextWeeklyBoundary(from now: Date, dayOffset: Int = 0) -> Date {
+        let cal = Calendar.current
+        // Next Monday at 00:00 local time
+        var next = cal.nextDate(after: now,
+                                matching: DateComponents(hour: 0, minute: 0, second: 0, weekday: 2),
+                                matchingPolicy: .nextTime,
+                                direction: .forward) ?? now.addingTimeInterval(7 * 24 * 60 * 60)
+        if dayOffset > 0 {
+            next = cal.date(byAdding: .day, value: dayOffset, to: next) ?? next
+        }
+        return next
+    }
+}

@@ -18,9 +18,10 @@ xcodebuild -project ClaudeUsageMonitor.xcodeproj -scheme ClaudeUsageMonitor -con
 - See [Privacy Policy](./PrivacyPolicy.md).
 
 ## Usage
-1. Launch the app and click `Log in with Claude.ai`.
+1. Launch the app and choose either `Log in with Claude.ai` or `Try Demo Mode`.
 2. After successful browser OAuth, the menu bar updates (e.g., `CC-42%`).
-3. Click the menu bar item to view details, refresh, change intervals, or use quick-copy shortcuts.
+3. In demo mode, the menu bar shows `DEMO-xx%` and sample reset windows.
+4. Click the menu bar item to view details, refresh, change intervals, or use quick-copy shortcuts.
 
 ## License
 MIT. See [LICENSE](./LICENSE).
