@@ -275,7 +275,7 @@ class StatusBarController: ObservableObject {
             }
         )
         let win = NSWindow(contentViewController: NSHostingController(rootView: view))
-        win.title = "AI Usage Tracker for Claude Subscription"
+        win.title = "Usage Tracker for Claude"
         win.styleMask = [.titled, .closable]
         win.setContentSize(NSSize(width: 420, height: 360))
         win.center()

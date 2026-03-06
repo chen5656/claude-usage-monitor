@@ -37,7 +37,7 @@
 		BB000008000000000000001A /* ClaudeUsageMonitorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeUsageMonitorApp.swift; sourceTree = "<group>"; };
 		BB000009000000000000001A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BB00000A000000000000001A /* ClaudeUsageMonitor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ClaudeUsageMonitor.entitlements; sourceTree = "<group>"; };
-		BB00000B000000000000001A /* AI Usage Tracker for Claude Subscription.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AI Usage Tracker for Claude Subscription.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB00000B000000000000001A /* Usage Tracker for Claude.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Usage Tracker for Claude.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB00000C000000000000001A /* OAuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthManager.swift; sourceTree = "<group>"; };
 		BB00000D000000000000001A /* CallbackServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallbackServer.swift; sourceTree = "<group>"; };
 		BB00000E000000000000001A /* OAuthTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthTokens.swift; sourceTree = "<group>"; };
@@ -88,7 +88,7 @@
 		AA000004000000000000001A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BB00000B000000000000001A /* AI Usage Tracker for Claude Subscription.app */,
+				BB00000B000000000000001A /* Usage Tracker for Claude.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -110,7 +110,7 @@
 			);
 			name = ClaudeUsageMonitor;
 			productName = ClaudeUsageMonitor;
-			productReference = BB00000B000000000000001A /* AI Usage Tracker for Claude Subscription.app */;
+			productReference = BB00000B000000000000001A /* Usage Tracker for Claude.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -304,7 +304,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ClaudeUsageMonitor/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "AI Usage Tracker for Claude Subscription";
+				INFOPLIST_KEY_CFBundleDisplayName = "Usage Tracker for Claude";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -313,7 +313,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.claudeusagemonitor.app;
-				PRODUCT_NAME = "AI Usage Tracker for Claude Subscription";
+				PRODUCT_NAME = "Usage Tracker for Claude";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -331,7 +331,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ClaudeUsageMonitor/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "AI Usage Tracker for Claude Subscription";
+				INFOPLIST_KEY_CFBundleDisplayName = "Usage Tracker for Claude";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -340,7 +340,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.claudeusagemonitor.app;
-				PRODUCT_NAME = "AI Usage Tracker for Claude Subscription";
+				PRODUCT_NAME = "Usage Tracker for Claude";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};

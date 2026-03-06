@@ -3,7 +3,7 @@ set -e
 
 PROJECT="ClaudeUsageMonitor.xcodeproj"
 SCHEME="ClaudeUsageMonitor"
-APP_NAME="AI Usage Tracker for Claude Subscription"
+APP_NAME="Usage Tracker for Claude"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 BUILD_DIR="$REPO_ROOT/build"
@@ -17,24 +17,43 @@ build_and_package() {
     local ARCH=$1
     local ARCH_LABEL=$2
     local ARCHIVE_PATH="$BUILD_DIR/$ARCH_LABEL/$APP_NAME.xcarchive"
+    local DERIVED_DATA_PATH="$BUILD_DIR/$ARCH_LABEL/DerivedData"
     local DMG_NAME="${APP_NAME}-${ARCH_LABEL}.dmg"
 
     echo "==> Building for $ARCH_LABEL ($ARCH)..."
 
-    xcodebuild archive \
-        -project "$PROJECT" \
-        -scheme "$SCHEME" \
-        -archivePath "$ARCHIVE_PATH" \
-        -destination "generic/platform=macOS" \
-        ARCHS="$ARCH" \
-        ONLY_ACTIVE_ARCH=NO \
-        CODE_SIGN_IDENTITY="-" \
-        CODE_SIGNING_REQUIRED=NO \
-        CODE_SIGNING_ALLOWED=YES \
-        OTHER_CODE_SIGN_FLAGS="--deep" \
-        SKIP_INSTALL=NO \
-        BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-        | xcpretty 2>/dev/null || true
+    if command -v xcpretty >/dev/null 2>&1; then
+        xcodebuild archive \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -archivePath "$ARCHIVE_PATH" \
+            -derivedDataPath "$DERIVED_DATA_PATH" \
+            -destination "generic/platform=macOS" \
+            ARCHS="$ARCH" \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=YES \
+            OTHER_CODE_SIGN_FLAGS="--deep" \
+            SKIP_INSTALL=NO \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            | xcpretty
+    else
+        xcodebuild archive \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -archivePath "$ARCHIVE_PATH" \
+            -derivedDataPath "$DERIVED_DATA_PATH" \
+            -destination "generic/platform=macOS" \
+            ARCHS="$ARCH" \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=YES \
+            OTHER_CODE_SIGN_FLAGS="--deep" \
+            SKIP_INSTALL=NO \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+    fi
 
     echo "==> Extracting .app from archive..."
     APP_PATH=$(find "$ARCHIVE_PATH/Products" -name "*.app" | head -1)

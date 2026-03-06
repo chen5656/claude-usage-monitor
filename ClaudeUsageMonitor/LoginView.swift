@@ -31,7 +31,7 @@ struct LoginView: View {
                         )
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("AI Usage Tracker for Claude Subscription")
+                        Text("Usage Tracker for Claude")
                             .font(.system(size: 18, weight: .semibold, design: .rounded))
 
                         Text("Track plan limits from your menu bar")
