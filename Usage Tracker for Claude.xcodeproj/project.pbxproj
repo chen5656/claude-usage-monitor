@@ -57,12 +57,12 @@
 		AA000002000000000000001A = {
 			isa = PBXGroup;
 			children = (
-				AA000003000000000000001A /* ClaudeUsageMonitor */,
+				AA000003000000000000001A /* Usage Tracker for Claude */,
 				AA000004000000000000001A /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		AA000003000000000000001A /* ClaudeUsageMonitor */ = {
+		AA000003000000000000001A /* Usage Tracker for Claude */ = {
 			isa = PBXGroup;
 			children = (
 				BB000008000000000000001A /* ClaudeUsageMonitorApp.swift */,
@@ -82,7 +82,7 @@
 				56A7C1E02F9C9A1B00AB12CD /* ShortcutStore.swift */,
 				56821D502F525A9B00C58E42 /* Assets.xcassets */,
 			);
-			path = ClaudeUsageMonitor;
+			path = "Usage Tracker for Claude";
 			sourceTree = "<group>";
 		};
 		AA000004000000000000001A /* Products */ = {
@@ -96,9 +96,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		AA000005000000000000001A /* ClaudeUsageMonitor */ = {
+		AA000005000000000000001A /* Usage Tracker for Claude */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FF000002000000000000001A /* Build configuration list for PBXNativeTarget "ClaudeUsageMonitor" */;
+			buildConfigurationList = FF000002000000000000001A /* Build configuration list for PBXNativeTarget "Usage Tracker for Claude" */;
 			buildPhases = (
 				DD000001000000000000001A /* Sources */,
 				DD000002000000000000001A /* Frameworks */,
@@ -108,7 +108,7 @@
 			);
 			dependencies = (
 			);
-			name = ClaudeUsageMonitor;
+			name = "Usage Tracker for Claude";
 			productName = ClaudeUsageMonitor;
 			productReference = BB00000B000000000000001A /* Usage Tracker for Claude.app */;
 			productType = "com.apple.product-type.application";
@@ -128,7 +128,7 @@
 					};
 				};
 			};
-			buildConfigurationList = FF000001000000000000001A /* Build configuration list for PBXProject "ClaudeUsageMonitor" */;
+			buildConfigurationList = FF000001000000000000001A /* Build configuration list for PBXProject "Usage Tracker for Claude" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -141,7 +141,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				AA000005000000000000001A /* ClaudeUsageMonitor */,
+				AA000005000000000000001A /* Usage Tracker for Claude */,
 			);
 		};
 /* End PBXProject section */
@@ -349,7 +349,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		FF000001000000000000001A /* Build configuration list for PBXProject "ClaudeUsageMonitor" */ = {
+		FF000001000000000000001A /* Build configuration list for PBXProject "Usage Tracker for Claude" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				EE000001000000000000001A /* Debug */,
@@ -358,7 +358,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FF000002000000000000001A /* Build configuration list for PBXNativeTarget "ClaudeUsageMonitor" */ = {
+		FF000002000000000000001A /* Build configuration list for PBXNativeTarget "Usage Tracker for Claude" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				EE000003000000000000001A /* Debug */,

@@ -17,8 +17,8 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "AA000005000000000000001A"
                BuildableName = "Usage Tracker for Claude.app"
-               BlueprintName = "ClaudeUsageMonitor"
-               ReferencedContainer = "container:ClaudeUsageMonitor.xcodeproj">
+               BlueprintName = "Usage Tracker for Claude"
+               ReferencedContainer = "container:Usage Tracker for Claude.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -46,8 +46,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AA000005000000000000001A"
             BuildableName = "Usage Tracker for Claude.app"
-            BlueprintName = "ClaudeUsageMonitor"
-            ReferencedContainer = "container:ClaudeUsageMonitor.xcodeproj">
+            BlueprintName = "Usage Tracker for Claude"
+            ReferencedContainer = "container:Usage Tracker for Claude.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -63,8 +63,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AA000005000000000000001A"
             BuildableName = "Usage Tracker for Claude.app"
-            BlueprintName = "ClaudeUsageMonitor"
-            ReferencedContainer = "container:ClaudeUsageMonitor.xcodeproj">
+            BlueprintName = "Usage Tracker for Claude"
+            ReferencedContainer = "container:Usage Tracker for Claude.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
